@@ -1,0 +1,1 @@
+HA‑Contract directory is the sole document source
