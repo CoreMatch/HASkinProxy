@@ -8,6 +8,12 @@ A lightweight proxy service that converts **Yggdrasil API** logic into the **Cus
 
 While originally designed for the HA ecosystem (defined in [HA-Contract](https://github.com/CoreMatch/HA-Contract)), this proxy forwards standard Yggdrasil API calls. This means it is compatible with **any** authentication server that implements the Yggdrasil protocol, allowing seamless skin and cape loading without modifying the upstream service.
 
+## Documentation
+
+All interface documents and development specifications are unified in the root directory:
+- [API Standard & Specification](https://github.com/CoreMatch/HA-Contract/blob/main/docs/api/README.md)
+- [HASkinProxy Development Guide](https://github.com/CoreMatch/HA-Contract/blob/main/docs/dev/HASkinProxy/README.md)
+
 ## Key Features
 
 - **CustomSkinAPI Compatibility**: Fully implements the standard CSL protocol.
