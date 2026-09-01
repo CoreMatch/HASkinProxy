@@ -7,15 +7,24 @@ import (
 	"haskinproxy/internal/upstream"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
+const configFileName = "config.yaml"
+
 func main() {
-	// 1. Load config (auto-generate if missing)
-	if err := config.LoadConfig("config.yaml"); err != nil {
-		log.Fatalf("Failed to load or generate config.yaml: %v", err)
+	// 1. Load config (auto-generate if missing), located next to the
+	// executable (like WinnerProxy) so it works regardless of CWD.
+	cfgPath, err := configPath()
+	if err != nil {
+		log.Fatalf("locate executable: %v", err)
+	}
+	if err := config.LoadConfig(cfgPath); err != nil {
+		log.Fatalf("Failed to load or generate config: %v", err)
 	}
 
 	// 2. Init components
@@ -57,6 +66,17 @@ func main() {
 	if err := r.Run(addr); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
+}
+
+// configPath returns the config file path next to the executable, so
+// the proxy finds its config regardless of the current working
+// directory (same approach as WinnerProxy).
+func configPath() (string, error) {
+	exe, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(filepath.Dir(exe), configFileName), nil
 }
 
 // announcePresence performs the presence (bonjour) handshake with

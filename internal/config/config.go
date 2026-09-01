@@ -48,20 +48,23 @@ type PresenceConfig struct {
 
 var AppConfig Config
 
+// LoadConfig reads configuration from the YAML file at path. Missing
+// fields fall back to DefaultConfig() values. If the file does not
+// exist (or cannot be read), the defaults are used and a default
+// config file is generated in place; a failed write is only logged,
+// never fatal. This mirrors WinnerProxy's config.Load behavior.
 func LoadConfig(path string) error {
-	// Check if file exists
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		log.Printf("Config file %s not found, generating a default one...", path)
-		AppConfig = DefaultConfig()
-		if err := SaveConfig(path, AppConfig); err != nil {
-			return err
-		}
-		return nil
-	}
-
+	// Start from defaults so fields missing from config.yaml keep their
+	// default values (e.g. presence.enabled defaults to true), instead
+	// of silently staying at their zero value.
+	AppConfig = DefaultConfig()
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return err
+		log.Printf("Config file %s not found, generating a default one...", path)
+		if err := SaveConfig(path, AppConfig); err != nil {
+			log.Printf("WARN: could not write default config to %s: %v", path, err)
+		}
+		return nil
 	}
 	return yaml.Unmarshal(data, &AppConfig)
 }
