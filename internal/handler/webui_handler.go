@@ -20,37 +20,31 @@ func NewWebUIHandler() *WebUIHandler {
 	return &WebUIHandler{}
 }
 
-// sdkJS declares the WEBUI SDK global object. The iframe URL is resolved
-// from the main service's own callback URL: the SDK queries {BackendUrl}
-// /status (the same origin this script is served from) and takes
-// data.backend.url, then appends the relay dest /customskinloader. This
-// keeps the setup page on the main service's origin (relayed to this
-// proxy), so a frontend SPA fallback (Vite/nginx try_files) can never
-// swallow the path. The query must be synchronous: the Dashboard reads
-// sdk.dashboard.url right after script.onload.
+// sdkJS declares the WEBUI SDK global object. dashboard.url must be a
+// relayed address on the main service's own origin (never the frontend
+// origin, which a Vite/nginx SPA fallback would swallow): the SDK
+// synchronously queries {BackendUrl}/status and takes data.backend.url
+// (the main service callback URL), then appends the relay dest
+// /customskinloader. If the query fails, dashboard stays null so the
+// WEBUI simply does not render the menu item. The query must be
+// synchronous: the Dashboard reads sdk.dashboard right after
+// script.onload.
 const sdkJS = `(function () {
-  var scriptSrc = document.currentScript ? document.currentScript.src : '';
-  var fallbackUrl = scriptSrc
-    ? new URL('../../customskinloader', scriptSrc).href
-    : '/customskinloader';
-  var sdk = {
-    name: 'HASkinProxy',
-    version: '1.0.0',
-    dashboard: { label: 'CustomSkinLoader', url: fallbackUrl }
-  };
+  var sdk = { name: 'HASkinProxy', version: '1.0.0', dashboard: null };
 
   try {
+    var scriptSrc = document.currentScript ? document.currentScript.src : '';
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', new URL('../../status', scriptSrc).href, false);
+    xhr.open('GET', scriptSrc ? new URL('../../status', scriptSrc).href : '/status', false);
     xhr.send(null);
     if (xhr.status === 200) {
       var data = JSON.parse(xhr.responseText);
       var base = data && data.backend && data.backend.url;
       if (base) {
-        sdk.dashboard.url = new URL('/customskinloader', base.replace(/\\/+$/, '')).href;
+        sdk.dashboard = { label: 'CustomSkinLoader', url: new URL('/customskinloader', base.replace(/\\/+$/, '')).href };
       }
     }
-  } catch (e) { /* keep fallbackUrl */ }
+  } catch (e) { /* keep dashboard null: only relayed URLs are advertised */ }
 
   window['HASkinProxy-sdk'] = sdk;
 })();
