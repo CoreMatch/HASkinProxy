@@ -2,7 +2,7 @@ package cache
 
 import (
 	"encoding/json"
-	"haskinproxy/internal/config"
+	"haskinproxy/config"
 
 	"github.com/coocood/freecache"
 )

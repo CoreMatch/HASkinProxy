@@ -1,11 +1,13 @@
-package upstream
+// Package hrpauth is the HRPAuth upstream client, mirroring the
+// internal/hrpauth package layout of WinnerProxy.
+package hrpauth
 
 import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"haskinproxy/internal/config"
+	"haskinproxy/config"
 	"haskinproxy/internal/model"
 	"io"
 	"log"

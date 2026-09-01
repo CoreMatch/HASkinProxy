@@ -1,3 +1,5 @@
+// Package config loads HASkinProxy's runtime configuration from a YAML
+// file, mirroring the layout of WinnerProxy's top-level config package.
 package config
 
 import (

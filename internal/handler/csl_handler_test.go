@@ -2,10 +2,10 @@ package handler
 
 import (
 	"encoding/json"
+	"haskinproxy/config"
 	"haskinproxy/internal/cache"
-	"haskinproxy/internal/config"
+	"haskinproxy/internal/hrpauth"
 	"haskinproxy/internal/model"
-	"haskinproxy/internal/upstream"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -48,7 +48,7 @@ func TestCSLHandler_GetProfile(t *testing.T) {
 	config.AppConfig.Cache.ProfileTTL = 60
 	config.AppConfig.Cache.MaxSizeMB = 10
 
-	client := upstream.NewHAClient()
+	client := hrpauth.NewHAClient()
 	appCache := cache.NewCache()
 	h := NewCSLHandler(client, appCache)
 

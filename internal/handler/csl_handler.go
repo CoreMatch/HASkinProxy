@@ -1,10 +1,10 @@
 package handler
 
 import (
+	"haskinproxy/config"
 	"haskinproxy/internal/cache"
-	"haskinproxy/internal/config"
+	"haskinproxy/internal/hrpauth"
 	"haskinproxy/internal/model"
-	"haskinproxy/internal/upstream"
 	"net/http"
 	"strings"
 
@@ -12,11 +12,11 @@ import (
 )
 
 type CSLHandler struct {
-	HAClient *upstream.HAClient
+	HAClient *hrpauth.HAClient
 	Cache    *cache.Cache
 }
 
-func NewCSLHandler(client *upstream.HAClient, c *cache.Cache) *CSLHandler {
+func NewCSLHandler(client *hrpauth.HAClient, c *cache.Cache) *CSLHandler {
 	return &CSLHandler{
 		HAClient: client,
 		Cache:    c,
@@ -61,7 +61,7 @@ func (h *CSLHandler) GetProfile(c *gin.Context) {
 
 	for _, prop := range profile.Properties {
 		if prop.Name == "textures" {
-			texVal, err := upstream.DecodeTextures(prop)
+			texVal, err := hrpauth.DecodeTextures(prop)
 			if err != nil {
 				continue
 			}
