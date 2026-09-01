@@ -54,6 +54,10 @@ cache:
   profile_ttl: 3600          # Profile cache duration (seconds)
   texture_ttl: 86400         # Texture cache duration (seconds)
   max_size_mb: 256           # Maximum cache size in MB
+presence:
+  enabled: true              # Register with HRPAuth via POST /services/presence
+  name: "HASkinProxy"        # Service name in the presence registry
+  ttl_seconds: 0             # Self-declared lifetime (seconds); <=0 means never expire
 ```
 
 ## API Endpoints

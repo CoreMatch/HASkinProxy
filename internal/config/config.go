@@ -22,6 +22,22 @@ type Config struct {
 		TextureTTL int `yaml:"texture_ttl"` // in seconds
 		MaxSizeMB  int `yaml:"max_size_mb"`
 	} `yaml:"cache"`
+	Presence PresenceConfig `yaml:"presence"`
+}
+
+// PresenceConfig controls the microservice presence handshake with
+// HRPAuth (POST /services/presence, the "bonjour" handshake). It
+// registers HASkinProxy in HRPAuth's in-process presence registry so
+// the main service knows it is online. A failed handshake is logged but
+// never blocks or stops the proxy.
+type PresenceConfig struct {
+	// Enabled toggles the presence handshake. Default true.
+	Enabled bool `yaml:"enabled"`
+	// Name is the service name registered in HRPAuth. Default "HASkinProxy".
+	Name string `yaml:"name"`
+	// TTLSeconds is the self-declared lifetime in seconds; <=0 (default)
+	// means the record never expires.
+	TTLSeconds int `yaml:"ttl_seconds"`
 }
 
 var AppConfig Config
@@ -60,5 +76,9 @@ func DefaultConfig() Config {
 	c.Cache.ProfileTTL = 3600
 	c.Cache.TextureTTL = 86400
 	c.Cache.MaxSizeMB = 256
+	c.Presence = PresenceConfig{
+		Enabled: true,
+		Name:    "HASkinProxy",
+	}
 	return c
 }

@@ -74,8 +74,8 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"message": "cache cleared"})
 	})
 
-	log.Println("Server starting on :8080")
-	if err := r.Run(":8080"); err != nil {
+	log.Println("Server starting on :2702")
+	if err := r.Run(":2702"); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }

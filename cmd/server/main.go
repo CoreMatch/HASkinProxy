@@ -22,6 +22,11 @@ func main() {
 	appCache := cache.NewCache()
 	cslHandler := handler.NewCSLHandler(haClient, appCache)
 
+	// 2.1 Presence handshake with HRPAuth (bonjour), non-blocking
+	if config.AppConfig.Presence.Enabled {
+		announcePresence(haClient)
+	}
+
 	// 3. Setup router
 	r := gin.Default()
 
@@ -43,4 +48,22 @@ func main() {
 	if err := r.Run(addr); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
+}
+
+// announcePresence performs the presence (bonjour) handshake with
+// HRPAuth asynchronously. It registers HASkinProxy in HRPAuth's
+// presence registry; a failure is only logged as a warning and never
+// blocks or stops the main process.
+func announcePresence(cli *upstream.HAClient) {
+	cfg := config.AppConfig.Presence
+	go func() {
+		if err := cli.RegisterPresence(upstream.PresenceRequest{
+			Name:       cfg.Name,
+			TTLSeconds: cfg.TTLSeconds,
+		}); err != nil {
+			log.Printf("WARN: presence handshake with HRPAuth failed (proxy continues running): %v", err)
+			return
+		}
+		log.Printf("presence handshake ok: registered as %q", cfg.Name)
+	}()
 }

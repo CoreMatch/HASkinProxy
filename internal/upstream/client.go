@@ -112,3 +112,37 @@ func (c *HAClient) FetchTexture(hash string) ([]byte, http.Header, error) {
 
 	return data, resp.Header, nil
 }
+
+// PresenceRequest is the body of the microservice presence handshake
+// (POST /services/presence, the "bonjour" handshake). Only the fields
+// HASkinProxy uses are modeled; optional contract fields (scope,
+// sdk_url, security_level, interacts_with) are omitted and stay unset.
+type PresenceRequest struct {
+	Name string `json:"name"`
+	// TTLSeconds is the self-declared lifetime in seconds; <=0 or
+	// omitted means the record never expires.
+	TTLSeconds int `json:"ttl_seconds"`
+}
+
+// RegisterPresence performs the microservice presence (bonjour)
+// handshake: it registers or heartbeats HASkinProxy in HRPAuth's
+// presence registry. It is fire-and-forget from the caller's point of
+// view; failures surface as an error and never stop the process.
+//
+//	200          → nil
+//	network err  → error
+//	other status → error
+func (c *HAClient) RegisterPresence(req PresenceRequest) error {
+	body, _ := json.Marshal(req)
+	resp, err := c.HTTPClient.Post(c.BaseURL+"/services/presence", "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		_, _ = io.Copy(io.Discard, resp.Body)
+		return fmt.Errorf("upstream returned status %d", resp.StatusCode)
+	}
+	return nil
+}
