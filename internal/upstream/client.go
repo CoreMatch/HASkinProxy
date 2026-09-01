@@ -8,6 +8,7 @@ import (
 	"haskinproxy/internal/config"
 	"haskinproxy/internal/model"
 	"io"
+	"log"
 	"net/http"
 	"time"
 )
@@ -28,12 +29,16 @@ func NewHAClient() *HAClient {
 
 // GetUUIDByUsername calls POST /api/profiles/minecraft
 func (c *HAClient) GetUUIDByUsername(username string) (string, error) {
+	url := c.BaseURL + "/api/profiles/minecraft"
+	log.Printf("upstream request: POST %s (username=%s)", url, username)
 	reqBody, _ := json.Marshal([]string{username})
-	resp, err := c.HTTPClient.Post(c.BaseURL+"/api/profiles/minecraft", "application/json", bytes.NewBuffer(reqBody))
+	resp, err := c.HTTPClient.Post(url, "application/json", bytes.NewBuffer(reqBody))
 	if err != nil {
+		log.Printf("upstream error: POST %s: %v", url, err)
 		return "", err
 	}
 	defer resp.Body.Close()
+	log.Printf("upstream response: POST %s -> %d", url, resp.StatusCode)
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("upstream returned status %d", resp.StatusCode)
@@ -53,11 +58,15 @@ func (c *HAClient) GetUUIDByUsername(username string) (string, error) {
 
 // GetProfileByUUID calls GET /sessionserver/session/minecraft/profile/:uuid
 func (c *HAClient) GetProfileByUUID(uuid string) (*model.SessionProfileResponse, error) {
-	resp, err := c.HTTPClient.Get(c.BaseURL + "/sessionserver/session/minecraft/profile/" + uuid)
+	url := c.BaseURL + "/sessionserver/session/minecraft/profile/" + uuid
+	log.Printf("upstream request: GET %s", url)
+	resp, err := c.HTTPClient.Get(url)
 	if err != nil {
+		log.Printf("upstream error: GET %s: %v", url, err)
 		return nil, err
 	}
 	defer resp.Body.Close()
+	log.Printf("upstream response: GET %s -> %d", url, resp.StatusCode)
 
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, fmt.Errorf("profile not found")
@@ -95,11 +104,15 @@ func DecodeTextures(property model.ProfileProperty) (*model.TexturePropertyValue
 
 // FetchTexture fetches the raw texture bytes from /textures/:hash
 func (c *HAClient) FetchTexture(hash string) ([]byte, http.Header, error) {
-	resp, err := c.HTTPClient.Get(c.BaseURL + "/textures/" + hash)
+	url := c.BaseURL + "/textures/" + hash
+	log.Printf("upstream request: GET %s", url)
+	resp, err := c.HTTPClient.Get(url)
 	if err != nil {
+		log.Printf("upstream error: GET %s: %v", url, err)
 		return nil, nil, err
 	}
 	defer resp.Body.Close()
+	log.Printf("upstream response: GET %s -> %d", url, resp.StatusCode)
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, nil, fmt.Errorf("upstream returned status %d", resp.StatusCode)
@@ -147,12 +160,16 @@ type PresenceRequest struct {
 //	network err  → error
 //	other status → error
 func (c *HAClient) RegisterPresence(req PresenceRequest) error {
+	url := c.BaseURL + "/services/presence"
+	log.Printf("upstream request: POST %s (name=%s)", url, req.Name)
 	body, _ := json.Marshal(req)
-	resp, err := c.HTTPClient.Post(c.BaseURL+"/services/presence", "application/json", bytes.NewBuffer(body))
+	resp, err := c.HTTPClient.Post(url, "application/json", bytes.NewBuffer(body))
 	if err != nil {
+		log.Printf("upstream error: POST %s: %v", url, err)
 		return err
 	}
 	defer resp.Body.Close()
+	log.Printf("upstream response: POST %s -> %d", url, resp.StatusCode)
 
 	if resp.StatusCode != http.StatusOK {
 		_, _ = io.Copy(io.Discard, resp.Body)
@@ -178,15 +195,19 @@ type RelayRule struct {
 //	network err  → error
 //	other status → error
 func (c *HAClient) RegisterRelay(name string, relays []RelayRule) error {
+	url := c.BaseURL + "/services/relay"
+	log.Printf("upstream request: POST %s (name=%s, rules=%d)", url, name, len(relays))
 	body, _ := json.Marshal(map[string]any{
 		"name":   name,
 		"relays": relays,
 	})
-	resp, err := c.HTTPClient.Post(c.BaseURL+"/services/relay", "application/json", bytes.NewBuffer(body))
+	resp, err := c.HTTPClient.Post(url, "application/json", bytes.NewBuffer(body))
 	if err != nil {
+		log.Printf("upstream error: POST %s: %v", url, err)
 		return err
 	}
 	defer resp.Body.Close()
+	log.Printf("upstream response: POST %s -> %d", url, resp.StatusCode)
 
 	if resp.StatusCode != http.StatusOK {
 		_, _ = io.Copy(io.Discard, resp.Body)
