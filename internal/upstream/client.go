@@ -113,15 +113,29 @@ func (c *HAClient) FetchTexture(hash string) ([]byte, http.Header, error) {
 	return data, resp.Header, nil
 }
 
+// PresenceScope is the scope declaration of a registered microservice.
+// A non-empty FrontendAreas makes the service visible to the frontends
+// whose areas overlap (see HA-Contract microservices.md).
+type PresenceScope struct {
+	Name          string   `json:"name"`
+	FrontendAreas []string `json:"frontend_areas"`
+}
+
 // PresenceRequest is the body of the microservice presence handshake
 // (POST /services/presence, the "bonjour" handshake). Only the fields
-// HASkinProxy uses are modeled; optional contract fields (scope,
-// sdk_url, security_level, interacts_with) are omitted and stay unset.
+// HASkinProxy uses are modeled; optional contract fields (security_level,
+// interacts_with) are omitted and stay unset.
 type PresenceRequest struct {
 	Name string `json:"name"`
 	// TTLSeconds is the self-declared lifetime in seconds; <=0 or
 	// omitted means the record never expires.
 	TTLSeconds int `json:"ttl_seconds"`
+	// Scope declares the frontend areas this service covers (e.g.
+	// webui-dash) so the WEBUI can discover it.
+	Scope *PresenceScope `json:"scope,omitempty"`
+	// SDKURL points to the JS file that tells the frontend how to embed
+	// this service; HRPAuth relays it unchanged via GET /services/sdk/:name.
+	SDKURL string `json:"sdk_url,omitempty"`
 }
 
 // RegisterPresence performs the microservice presence (bonjour)
@@ -135,6 +149,40 @@ type PresenceRequest struct {
 func (c *HAClient) RegisterPresence(req PresenceRequest) error {
 	body, _ := json.Marshal(req)
 	resp, err := c.HTTPClient.Post(c.BaseURL+"/services/presence", "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		_, _ = io.Copy(io.Discard, resp.Body)
+		return fmt.Errorf("upstream returned status %d", resp.StatusCode)
+	}
+	return nil
+}
+
+// RelayRule maps a public path on the main service (dest) to a
+// microservice address (source). Requests hitting dest (and sub-paths)
+// are forwarded to source + the remaining path (see HA-Contract
+// microservices.md, "Relay Rules").
+type RelayRule struct {
+	Dest   string `json:"dest"`
+	Source string `json:"source"`
+}
+
+// RegisterRelay registers relay rules with HRPAuth (POST /services/relay)
+// so the frontend can reach this proxy through the main service origin.
+// Requires the service to have completed the presence handshake first.
+//
+//	200          → nil
+//	network err  → error
+//	other status → error
+func (c *HAClient) RegisterRelay(name string, relays []RelayRule) error {
+	body, _ := json.Marshal(map[string]any{
+		"name":   name,
+		"relays": relays,
+	})
+	resp, err := c.HTTPClient.Post(c.BaseURL+"/services/relay", "application/json", bytes.NewBuffer(body))
 	if err != nil {
 		return err
 	}

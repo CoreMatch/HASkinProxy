@@ -7,6 +7,7 @@ import (
 	"haskinproxy/internal/upstream"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,6 +22,7 @@ func main() {
 	haClient := upstream.NewHAClient()
 	appCache := cache.NewCache()
 	cslHandler := handler.NewCSLHandler(haClient, appCache)
+	webUIHandler := handler.NewWebUIHandler()
 
 	// 2.1 Presence handshake with HRPAuth (bonjour), non-blocking
 	if config.AppConfig.Presence.Enabled {
@@ -34,6 +36,13 @@ func main() {
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
+
+	// WEBUI microservice integration (static routes take precedence over :username)
+	// SDK JS relayed by HRPAuth to the WEBUI
+	r.GET("/sdk/haskinproxy.js", webUIHandler.GetSDKJS)
+
+	// CustomSkinLoader setup page embedded in the WEBUI Dashboard
+	r.GET("/customskinloader", webUIHandler.GetCSLPage)
 
 	// CSL Endpoints
 	// /{username}.json
@@ -52,18 +61,40 @@ func main() {
 
 // announcePresence performs the presence (bonjour) handshake with
 // HRPAuth asynchronously. It registers HASkinProxy in HRPAuth's
-// presence registry; a failure is only logged as a warning and never
-// blocks or stops the main process.
+// presence registry, declaring the WEBUI dashboard area it covers and
+// the SDK URL the frontend loads, then registers the relay rule so the
+// CustomSkinLoader page is reachable through the main service origin.
+// Failures are only logged as warnings and never block the main process.
 func announcePresence(cli *upstream.HAClient) {
 	cfg := config.AppConfig.Presence
 	go func() {
-		if err := cli.RegisterPresence(upstream.PresenceRequest{
+		req := upstream.PresenceRequest{
 			Name:       cfg.Name,
 			TTLSeconds: cfg.TTLSeconds,
-		}); err != nil {
+			Scope: &upstream.PresenceScope{
+				Name:          "haskinproxy",
+				FrontendAreas: []string{"webui-dash"},
+			},
+		}
+		publicURL := strings.TrimRight(config.AppConfig.Server.PublicURL, "/")
+		if publicURL != "" {
+			req.SDKURL = publicURL + "/sdk/haskinproxy.js"
+		}
+		if err := cli.RegisterPresence(req); err != nil {
 			log.Printf("WARN: presence handshake with HRPAuth failed (proxy continues running): %v", err)
 			return
 		}
 		log.Printf("presence handshake ok: registered as %q", cfg.Name)
+
+		if publicURL == "" {
+			return
+		}
+		if err := cli.RegisterRelay(cfg.Name, []upstream.RelayRule{
+			{Dest: "/customskinloader", Source: publicURL + "/customskinloader"},
+		}); err != nil {
+			log.Printf("WARN: relay rule registration with HRPAuth failed (proxy continues running): %v", err)
+			return
+		}
+		log.Printf("relay rule registered: /customskinloader -> %s/customskinloader", publicURL)
 	}()
 }

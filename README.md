@@ -53,6 +53,7 @@ The `config.yaml` file includes the following sections:
 ```yaml
 server:
   listen_addr: ":2702"        # Port for the proxy to listen on
+  public_url: "http://localhost:2702" # Externally reachable base URL, announced in the presence handshake (SDK)
 upstream:
   base_url: "http://localhost:2778" # Your Yggdrasil service URL (e.g., HRPAuth)
   timeout: 10                # Upstream request timeout in seconds
@@ -70,7 +71,13 @@ presence:
 
 - **GET `/{username}.json`**: Returns the player's CSL profile (skin/cape hashes).
 - **GET `/textures/{hash}`**: Returns the raw texture image data.
+- **GET `/customskinloader`**: CustomSkinLoader setup page (config generator + usage), embedded in the WEBUI Dashboard.
+- **GET `/sdk/haskinproxy.js`**: Microservice SDK JS, relayed by HRPAuth to the WEBUI (declares the Dashboard menu item).
 - **GET `/health`**: Simple health check endpoint.
+
+## WEBUI Integration
+
+On startup, the proxy performs the presence (bonjour) handshake with HRPAuth (`POST /services/presence`) and declares the `webui-dash` frontend area plus its `sdk_url`. It then registers a relay rule (`POST /services/relay`) so the CustomSkinLoader page is served through the main service origin. The HRPAuth WEBUI discovers the service and automatically adds a **CustomSkinLoader** item to the Dashboard sidebar, loading the setup page via `{BackendUrl}/customskinloader` (relayed to this proxy). Requires `server.public_url` to be set to an address reachable by HRPAuth.
 
 ## Architecture
 

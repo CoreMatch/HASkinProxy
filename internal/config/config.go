@@ -10,6 +10,12 @@ import (
 type Config struct {
 	Server struct {
 		ListenAddr string `yaml:"listen_addr"`
+		// PublicURL is the externally reachable base URL of this proxy
+		// (e.g. http://localhost:2702). It is announced to HRPAuth in the
+		// presence handshake (sdk_url) and embedded in the WEBUI SDK so
+		// the frontend can locate the CustomSkinLoader setup page.
+		// Empty means the SDK falls back to a relative path.
+		PublicURL string `yaml:"public_url"`
 	} `yaml:"server"`
 	Upstream struct {
 		BaseURL      string `yaml:"base_url"`
@@ -71,6 +77,7 @@ func SaveConfig(path string, cfg Config) error {
 func DefaultConfig() Config {
 	c := Config{}
 	c.Server.ListenAddr = ":2702"
+	c.Server.PublicURL = "http://localhost:2702"
 	c.Upstream.BaseURL = "http://localhost:2778" // Default upstream URL
 	c.Upstream.Timeout = 10
 	c.Cache.ProfileTTL = 3600
