@@ -66,7 +66,8 @@ func (h *WebUIHandler) GetSDKJS(c *gin.Context) {
 
 // GetCSLPage handles GET /customskinloader. It renders a self-contained
 // setup page: a CustomSkinLoader config.json generator (the API root is
-// derived from this proxy's own origin) plus usage instructions.
+// derived from the main service's callback URL + /csl/, the relay dest)
+// plus usage instructions.
 func (h *WebUIHandler) GetCSLPage(c *gin.Context) {
 	c.Header("Content-Type", "text/html; charset=utf-8")
 	c.String(http.StatusOK, cslPage)
@@ -125,8 +126,25 @@ const cslPage = `<!DOCTYPE html>
   var preview = document.getElementById('config-preview');
   var copied = false;
 
-  // 页面由本代理自身提供，location.origin 即为 CustomSkinAPI 根地址。
-  rootInput.value = location.origin + '/';
+  // 本代理的 CSL API 经主服务 relay 到 /csl/（dest=/csl，见 HA-Contract
+  // 微服务约定）。默认根地址取主服务回调地址 + /csl/：通过 GET /status
+  // 读取 data.backend.url（须同步，页面加载后立即渲染预览），失败时回退
+  // 到当前页面 origin + /csl/。
+  var defaultRoot = location.origin + '/csl/';
+  try {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', location.origin + '/status', false);
+    xhr.send(null);
+    if (xhr.status === 200) {
+      var data = JSON.parse(xhr.responseText);
+      var base = data && data.backend && data.backend.url;
+      if (base) {
+        defaultRoot = base.replace(/\/+$/, '') + '/csl/';
+      }
+    }
+  } catch (e) { /* keep location.origin fallback */ }
+
+  rootInput.value = defaultRoot;
 
   function buildConfig() {
     var root = rootInput.value.trim();
@@ -137,7 +155,7 @@ const cslPage = `<!DOCTYPE html>
         {
           name: 'HASkinProxy',
           type: 'CustomSkinAPI',
-          root: root || location.origin + '/'
+          root: root || defaultRoot
         }
       ]
     }, null, 2);

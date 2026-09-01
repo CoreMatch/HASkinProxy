@@ -62,8 +62,9 @@ func configPath() (string, error) {
 // announcePresence performs the presence (bonjour) handshake with
 // HRPAuth asynchronously. It registers HASkinProxy in HRPAuth's
 // presence registry, declaring the WEBUI dashboard area it covers and
-// the SDK URL the frontend loads, then registers the relay rule so the
-// CustomSkinLoader page is reachable through the main service origin.
+// the SDK URL the frontend loads, then registers the relay rules so the
+// CustomSkinLoader page and the CSL API are reachable through the main
+// service origin (/customskinloader, /csl/...).
 // Failures are only logged as warnings and never block the main process.
 func announcePresence(cli *hrpauth.HAClient) {
 	cfg := config.AppConfig.Presence
@@ -91,10 +92,14 @@ func announcePresence(cli *hrpauth.HAClient) {
 		}
 		if err := cli.RegisterRelay(cfg.Name, []hrpauth.RelayRule{
 			{Dest: "/customskinloader", Source: publicURL + "/customskinloader"},
+			// The CSL API lives at this proxy's root ({username}.json,
+			// textures/{hash}); /csl/{path} on the main service maps to
+			// {publicURL}/{path} (prefix concatenation).
+			{Dest: "/csl", Source: publicURL},
 		}); err != nil {
 			log.Printf("WARN: relay rule registration with HRPAuth failed (proxy continues running): %v", err)
 			return
 		}
-		log.Printf("relay rule registered: /customskinloader -> %s/customskinloader", publicURL)
+		log.Printf("relay rules registered: /customskinloader, /csl -> %s", publicURL)
 	}()
 }
