@@ -20,19 +20,40 @@ func NewWebUIHandler() *WebUIHandler {
 	return &WebUIHandler{}
 }
 
-// sdkJS declares the WEBUI SDK global object. The iframe URL is derived
-// from this script's own URL ({BackendUrl}/services/sdk/HASkinProxy):
-// "../../customskinloader" resolves to {BackendUrl}/customskinloader,
-// which HRPAuth relays to this proxy — same-origin with the frontend, no
-// hardcoded public URL required.
-const sdkJS = `window['HASkinProxy-sdk'] = {
-  name: 'HASkinProxy',
-  version: '1.0.0',
-  dashboard: {
-    label: 'CustomSkinLoader',
-    url: new URL('../../customskinloader', document.currentScript.src).href
-  }
-};
+// sdkJS declares the WEBUI SDK global object. The iframe URL is resolved
+// from the main service's own callback URL: the SDK queries {BackendUrl}
+// /status (the same origin this script is served from) and takes
+// data.backend.url, then appends the relay dest /customskinloader. This
+// keeps the setup page on the main service's origin (relayed to this
+// proxy), so a frontend SPA fallback (Vite/nginx try_files) can never
+// swallow the path. The query must be synchronous: the Dashboard reads
+// sdk.dashboard.url right after script.onload.
+const sdkJS = `(function () {
+  var scriptSrc = document.currentScript ? document.currentScript.src : '';
+  var fallbackUrl = scriptSrc
+    ? new URL('../../customskinloader', scriptSrc).href
+    : '/customskinloader';
+  var sdk = {
+    name: 'HASkinProxy',
+    version: '1.0.0',
+    dashboard: { label: 'CustomSkinLoader', url: fallbackUrl }
+  };
+
+  try {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', new URL('../../status', scriptSrc).href, false);
+    xhr.send(null);
+    if (xhr.status === 200) {
+      var data = JSON.parse(xhr.responseText);
+      var base = data && data.backend && data.backend.url;
+      if (base) {
+        sdk.dashboard.url = new URL('/customskinloader', base.replace(/\\/+$/, '')).href;
+      }
+    }
+  } catch (e) { /* keep fallbackUrl */ }
+
+  window['HASkinProxy-sdk'] = sdk;
+})();
 `
 
 // GetSDKJS handles GET /sdk/haskinproxy.js.
