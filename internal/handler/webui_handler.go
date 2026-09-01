@@ -30,7 +30,7 @@ func NewWebUIHandler() *WebUIHandler {
 // synchronous: the Dashboard reads sdk.dashboard right after
 // script.onload.
 const sdkJS = `(function () {
-  var sdk = { name: 'HASkinProxy', version: '1.0.0', dashboard: null };
+  var sdk = { name: 'HASkinProxy', version: '1.0.0' };
 
   try {
     var scriptSrc = document.currentScript ? document.currentScript.src : '';
@@ -41,10 +41,10 @@ const sdkJS = `(function () {
       var data = JSON.parse(xhr.responseText);
       var base = data && data.backend && data.backend.url;
       if (base) {
-        sdk.dashboard = { label: 'CustomSkinLoader', url: new URL('/customskinloader', base.replace(/\\/+$/, '')).href };
+        sdk.dashboard = { label: 'CustomSkinLoader', url: new URL('/customskinloader', base.replace(/\/+$/, '')).href };
       }
     }
-  } catch (e) { /* keep dashboard null: only relayed URLs are advertised */ }
+  } catch (e) { /* dashboard stays absent: only relayed URLs are advertised */ }
 
   window['HASkinProxy-sdk'] = sdk;
 })();

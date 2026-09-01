@@ -129,17 +129,17 @@ func (c *HAClient) FetchTexture(hash string) ([]byte, http.Header, error) {
 	return data, resp.Header, nil
 }
 
-// StatusResponse models GET /status data.backend (only the fields
-// HASkinProxy uses are modeled).
+// StatusResponse models GET /status (only the fields HASkinProxy uses
+// are modeled). The actual response is flat: backend sits at the top
+// level (no success/data wrapper).
 type StatusResponse struct {
-	Success bool `json:"success"`
-	Data    struct {
-		Backend struct {
-			Name    string `json:"name"`
-			URL     string `json:"url"`
-			Version string `json:"version"`
-		} `json:"backend"`
-	} `json:"data"`
+	Status  string `json:"status"`
+	Backend struct {
+		Name    string `json:"name"`
+		URL     string `json:"url"`
+		Version string `json:"version"`
+	} `json:"backend"`
+	Message string `json:"message"`
 }
 
 // GetCallbackURL queries the main service's GET /status and returns
@@ -168,10 +168,10 @@ func (c *HAClient) GetCallbackURL() (string, error) {
 	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
 		return "", err
 	}
-	if strings.TrimSpace(out.Data.Backend.URL) == "" {
+	if strings.TrimSpace(out.Backend.URL) == "" {
 		return "", fmt.Errorf("backend.url is empty")
 	}
-	return out.Data.Backend.URL, nil
+	return out.Backend.URL, nil
 }
 
 // PresenceScope is the scope declaration of a registered microservice.
