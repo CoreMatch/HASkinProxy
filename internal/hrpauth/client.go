@@ -12,6 +12,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -126,6 +127,51 @@ func (c *HAClient) FetchTexture(hash string) ([]byte, http.Header, error) {
 	}
 
 	return data, resp.Header, nil
+}
+
+// StatusResponse models GET /status data.backend (only the fields
+// HASkinProxy uses are modeled).
+type StatusResponse struct {
+	Success bool `json:"success"`
+	Data    struct {
+		Backend struct {
+			Name    string `json:"name"`
+			URL     string `json:"url"`
+			Version string `json:"version"`
+		} `json:"backend"`
+	} `json:"data"`
+}
+
+// GetCallbackURL queries the main service's GET /status and returns
+// data.backend.url (the main service callback URL / public origin).
+// The sdk_url must be built on this origin (relayed URL), never on this
+// proxy's internal address: clients (browser / WEBUI) are not in the
+// same environment and cannot reach a localhost address.
+//
+//	200 with backend.url → url, nil
+//	other status / error  → "", error
+func (c *HAClient) GetCallbackURL() (string, error) {
+	url := c.BaseURL + "/status"
+	log.Printf("upstream request: GET %s", url)
+	resp, err := c.HTTPClient.Get(url)
+	if err != nil {
+		log.Printf("upstream error: GET %s: %v", url, err)
+		return "", err
+	}
+	defer resp.Body.Close()
+	log.Printf("upstream response: GET %s -> %d", url, resp.StatusCode)
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("upstream returned status %d", resp.StatusCode)
+	}
+	var out StatusResponse
+	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
+		return "", err
+	}
+	if strings.TrimSpace(out.Data.Backend.URL) == "" {
+		return "", fmt.Errorf("backend.url is empty")
+	}
+	return out.Data.Backend.URL, nil
 }
 
 // PresenceScope is the scope declaration of a registered microservice.
