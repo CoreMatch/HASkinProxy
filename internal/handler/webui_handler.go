@@ -20,32 +20,19 @@ func NewWebUIHandler() *WebUIHandler {
 	return &WebUIHandler{}
 }
 
-// sdkJS declares the WEBUI SDK global object. dashboard.url must be a
-// relayed address on the main service's own origin (never the frontend
-// origin, which a Vite/nginx SPA fallback would swallow): the SDK
-// synchronously queries {BackendUrl}/status and takes data.backend.url
-// (the main service callback URL), then appends the relay dest
-// /customskinloader. If the query fails, dashboard stays null so the
-// WEBUI simply does not render the menu item. The query must be
-// synchronous: the Dashboard reads sdk.dashboard right after
-// script.onload.
+// sdkJS declares the WEBUI SDK global object. It reads the backend
+// callback URL from window.__BACKEND_URL__, which HRPAuth injects into
+// the page before loading microservice SDKs. dashboard.url is formed by
+// appending /customskinloader to that URL. If __BACKEND_URL__ is absent,
+// dashboard stays absent so the WEBUI simply does not render the menu
+// item.
 const sdkJS = `(function () {
-  var sdk = { name: 'HASkinProxy', version: '1.0.0' };
-
-  try {
-    var scriptSrc = document.currentScript ? document.currentScript.src : '';
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', scriptSrc ? new URL('../../status', scriptSrc).href : '/status', false);
-    xhr.send(null);
-    if (xhr.status === 200) {
-      var data = JSON.parse(xhr.responseText);
-      var base = data && data.backend && data.backend.url;
-      if (base) {
-        sdk.dashboard = { label: 'CustomSkinLoader', url: new URL('/customskinloader', base.replace(/\/+$/, '')).href };
-      }
-    }
-  } catch (e) { /* dashboard stays absent: only relayed URLs are advertised */ }
-
+  var base = window.__BACKEND_URL__ || '';
+  var sdk = {
+    name: 'HASkinProxy',
+    version: '1.0.0',
+    dashboard: { label: 'CustomSkinLoader', url: base.replace(/\/+$/, '') + '/customskinloader' },
+  };
   window['HASkinProxy-sdk'] = sdk;
 })();
 `
@@ -121,22 +108,10 @@ const cslPage = `<!DOCTYPE html>
   var copied = false;
 
   // 本代理的 CSL API 经主服务 relay 到 /csl/（dest=/csl，见 HA-Contract
-  // 微服务约定）。默认根地址取主服务回调地址 + /csl/：通过 GET /status
-  // 读取 data.backend.url（须同步，页面加载后立即渲染预览），失败时回退
-  // 到当前页面 origin + /csl/。
-  var defaultRoot = location.origin + '/csl/';
-  try {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', location.origin + '/status', false);
-    xhr.send(null);
-    if (xhr.status === 200) {
-      var data = JSON.parse(xhr.responseText);
-      var base = data && data.backend && data.backend.url;
-      if (base) {
-        defaultRoot = base.replace(/\/+$/, '') + '/csl/';
-      }
-    }
-  } catch (e) { /* keep location.origin fallback */ }
+  // 微服务约定）。默认根地址取 window.__BACKEND_URL__（由 HRPAuth 注入）+
+  // /csl/；缺失时回退到当前页面 origin + /csl/。
+  var base = window.__BACKEND_URL__ || '';
+  var defaultRoot = base.replace(/\/+$/, '') + '/csl/' || location.origin + '/csl/';
 
   rootInput.value = defaultRoot;
 
