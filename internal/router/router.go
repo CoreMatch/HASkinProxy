@@ -29,6 +29,7 @@ func New(csl *handler.CSLHandler, webui *handler.WebUIHandler) *gin.Engine {
 	// CSL endpoints.
 	r.GET("/:username", csl.GetProfile)
 	r.GET("/textures/:hash", csl.GetTexture)
+	r.POST("/:username/texture/delete", csl.DeleteTexture)
 
 	return r
 }

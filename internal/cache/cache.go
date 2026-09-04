@@ -55,3 +55,8 @@ func (c *Cache) GetRaw(key string) ([]byte, bool, error) {
 func (c *Cache) SetRaw(key string, val []byte, ttl int) error {
 	return c.Store.Set([]byte(key), val, ttl)
 }
+
+// Delete removes an entry from the cache. A missing key is not an error.
+func (c *Cache) Delete(key string) bool {
+	return c.Store.Del([]byte(key))
+}

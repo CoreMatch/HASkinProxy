@@ -105,6 +105,44 @@ func DecodeTextures(property model.ProfileProperty) (*model.TexturePropertyValue
 	return &textures, nil
 }
 
+// DeleteTexture calls POST /texture/delete on the upstream. The body
+// and Authorization header are forwarded unchanged from the caller
+// (HASkinProxy itself does not authenticate the deletion). Returns the
+// raw response body, status code and upstream response headers.
+//
+// The caller (handler) is expected to map client-side identifiers (e.g.
+// username) to upstream identifiers (profile_id) before invoking this
+// method, since the upstream body carries upstream-shaped fields.
+//
+//	2xx          → body, status, header, nil
+//	other status → body, status, header, nil  (upstream decided the failure)
+//	network err  → nil, 0, nil, err
+func (c *HAClient) DeleteTexture(body []byte, authHeader string) ([]byte, int, http.Header, error) {
+	url := c.BaseURL + "/texture/delete"
+	log.Printf("upstream request: POST %s", url)
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
+	if err != nil {
+		return nil, 0, nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	if authHeader != "" {
+		req.Header.Set("Authorization", authHeader)
+	}
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		log.Printf("upstream error: POST %s: %v", url, err)
+		return nil, 0, nil, err
+	}
+	defer resp.Body.Close()
+	log.Printf("upstream response: POST %s -> %d", url, resp.StatusCode)
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, resp.StatusCode, nil, err
+	}
+	return respBody, resp.StatusCode, resp.Header, nil
+}
+
 // FetchTexture fetches the raw texture bytes from /textures/:hash
 func (c *HAClient) FetchTexture(hash string) ([]byte, http.Header, error) {
 	url := c.BaseURL + "/textures/" + hash
