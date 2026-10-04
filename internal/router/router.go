@@ -25,6 +25,7 @@ func New(csl *handler.CSLHandler, webui *handler.WebUIHandler, auth *handler.Aut
 	{
 		authGroup.GET("/captcha", auth.GetCaptcha)
 		authGroup.POST("/send-reset-code", auth.SendResetCode)
+		authGroup.POST("/verify-reset-code", auth.VerifyResetCode)
 	}
 
 	// WEBUI microservice integration: SDK JS relayed by HRPAuth to the

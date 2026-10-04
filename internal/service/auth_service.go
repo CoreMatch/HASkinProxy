@@ -30,7 +30,7 @@ func NewAuthService(c *cache.Cache, ha *hrpauth.HAClient) *AuthService {
 
 // GenerateCaptcha generates a graphic captcha.
 func (s *AuthService) GenerateCaptcha() (id, b64s string, err error) {
-	driver := base64Captcha.NewDriverDigit(80, 240, 6, 0.7, 80)
+	driver := base64Captcha.NewDriverString(80, 240, 5, base64Captcha.OptionShowHollowLine, 4, base64Captcha.TxtAlphabet+base64Captcha.TxtNumbers, nil, nil, nil)
 	cp := base64Captcha.NewCaptcha(driver, captchaStore)
 	id, b64s, _, err = cp.Generate()
 	return
@@ -117,9 +117,19 @@ func (s *AuthService) updateRateLimit(email string) {
 	s.cache.Set(hourKey, count+1, 3600)
 }
 
+// VerifyResetCode verifies the reset code sent to the email.
+func (s *AuthService) VerifyResetCode(email, code string) bool {
+	var storedCode string
+	found, _ := s.cache.Get("reset_code:"+email, &storedCode)
+	if !found {
+		return false
+	}
+	return storedCode == code
+}
+
 func (s *AuthService) generateCode() string {
-	n, _ := rand.Int(rand.Reader, big.NewInt(1000000))
-	return fmt.Sprintf("%06d", n.Int64())
+	n, _ := rand.Int(rand.Reader, big.NewInt(10000))
+	return fmt.Sprintf("%04d", n.Int64())
 }
 
 func (s *AuthService) sendEmail(to, code string) error {

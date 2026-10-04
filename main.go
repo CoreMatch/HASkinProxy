@@ -113,6 +113,8 @@ func announcePresence(cli *hrpauth.HAClient) {
 			{Dest: "/sdk/haskinproxy.js", Source: publicURL + "/sdk/haskinproxy.js"},
 			// iframe 页面（浏览器）：主服务 origin + /customskinloader -> 本代理配置页
 			{Dest: "/customskinloader", Source: publicURL + "/customskinloader"},
+			// Auth 接口（找回密码等）
+			{Dest: "/auth", Source: publicURL + "/auth"},
 			// CSL API（Minecraft 客户端）：主服务 origin + /csl/ 前缀，relay 剥离
 			// 前缀后转发到本代理根路径（/users/:username、/textures/:hash）
 			{Dest: "/csl", Source: publicURL},
