@@ -22,8 +22,8 @@ type Config struct {
 	Upstream struct {
 		BaseURL      string `yaml:"base_url"`
 		Timeout      int    `yaml:"timeout"` // in seconds
-		ManageToken  string `yaml:"manage_token"`
-		EnableManage bool   `yaml:"enable_manage"`
+		ClientID     string `yaml:"client_id"`
+		ClientSecret string `yaml:"client_secret"`
 	} `yaml:"upstream"`
 	Cache struct {
 		ProfileTTL int `yaml:"profile_ttl"` // in seconds
@@ -85,6 +85,8 @@ func DefaultConfig() Config {
 	c.Server.PublicURL = "http://localhost:2702"
 	c.Upstream.BaseURL = "http://localhost:2778" // Default upstream URL
 	c.Upstream.Timeout = 10
+	c.Upstream.ClientID = ""
+	c.Upstream.ClientSecret = ""
 	c.Cache.ProfileTTL = 3600
 	c.Cache.TextureTTL = 86400
 	c.Cache.MaxSizeMB = 256

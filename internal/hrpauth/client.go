@@ -17,8 +17,10 @@ import (
 )
 
 type HAClient struct {
-	BaseURL    string
-	HTTPClient *http.Client
+	BaseURL      string
+	HTTPClient   *http.Client
+	ClientID     string
+	ClientSecret string
 }
 
 func NewHAClient() *HAClient {
@@ -27,7 +29,21 @@ func NewHAClient() *HAClient {
 		HTTPClient: &http.Client{
 			Timeout: time.Duration(config.AppConfig.Upstream.Timeout) * time.Second,
 		},
+		ClientID:     config.AppConfig.Upstream.ClientID,
+		ClientSecret: config.AppConfig.Upstream.ClientSecret,
 	}
+}
+
+func (c *HAClient) do(req *http.Request) (*http.Response, error) {
+	// If ClientID and ClientSecret are set, we assume ClientSecret is a
+	// static OAuth2 token (as per "oauth2 client id/token" instructions).
+	// We only set it if the caller hasn't already provided an Authorization
+	// header (e.g. for user-initiated proxy requests).
+	if c.ClientID != "" && c.ClientSecret != "" && req.Header.Get("Authorization") == "" {
+		req.Header.Set("Authorization", "Bearer "+c.ClientSecret)
+		req.Header.Set("X-Client-ID", c.ClientID)
+	}
+	return c.HTTPClient.Do(req)
 }
 
 // GetUUIDByUsername calls POST /api/profiles/minecraft
@@ -35,7 +51,13 @@ func (c *HAClient) GetUUIDByUsername(username string) (string, error) {
 	url := c.BaseURL + "/api/profiles/minecraft"
 	log.Printf("upstream request: POST %s (username=%s)", url, username)
 	reqBody, _ := json.Marshal([]string{username})
-	resp, err := c.HTTPClient.Post(url, "application/json", bytes.NewBuffer(reqBody))
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(reqBody))
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.do(req)
 	if err != nil {
 		log.Printf("upstream error: POST %s: %v", url, err)
 		return "", err
@@ -63,7 +85,11 @@ func (c *HAClient) GetUUIDByUsername(username string) (string, error) {
 func (c *HAClient) GetProfileByUUID(uuid string) (*model.SessionProfileResponse, error) {
 	url := c.BaseURL + "/sessionserver/session/minecraft/profile/" + uuid
 	log.Printf("upstream request: GET %s", url)
-	resp, err := c.HTTPClient.Get(url)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := c.do(req)
 	if err != nil {
 		log.Printf("upstream error: GET %s: %v", url, err)
 		return nil, err
@@ -128,7 +154,7 @@ func (c *HAClient) DeleteTexture(body []byte, authHeader string) ([]byte, int, h
 	if authHeader != "" {
 		req.Header.Set("Authorization", authHeader)
 	}
-	resp, err := c.HTTPClient.Do(req)
+	resp, err := c.do(req)
 	if err != nil {
 		log.Printf("upstream error: POST %s: %v", url, err)
 		return nil, 0, nil, err
@@ -147,7 +173,11 @@ func (c *HAClient) DeleteTexture(body []byte, authHeader string) ([]byte, int, h
 func (c *HAClient) FetchTexture(hash string) ([]byte, http.Header, error) {
 	url := c.BaseURL + "/textures/" + hash
 	log.Printf("upstream request: GET %s", url)
-	resp, err := c.HTTPClient.Get(url)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	resp, err := c.do(req)
 	if err != nil {
 		log.Printf("upstream error: GET %s: %v", url, err)
 		return nil, nil, err
@@ -191,7 +221,11 @@ type StatusResponse struct {
 func (c *HAClient) GetCallbackURL() (string, error) {
 	url := c.BaseURL + "/status"
 	log.Printf("upstream request: GET %s", url)
-	resp, err := c.HTTPClient.Get(url)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+	resp, err := c.do(req)
 	if err != nil {
 		log.Printf("upstream error: GET %s: %v", url, err)
 		return "", err
@@ -249,7 +283,13 @@ func (c *HAClient) RegisterPresence(req PresenceRequest) error {
 	url := c.BaseURL + "/services/presence"
 	log.Printf("upstream request: POST %s (name=%s)", url, req.Name)
 	body, _ := json.Marshal(req)
-	resp, err := c.HTTPClient.Post(url, "application/json", bytes.NewBuffer(body))
+	hReq, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+	hReq.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.do(hReq)
 	if err != nil {
 		log.Printf("upstream error: POST %s: %v", url, err)
 		return err
@@ -287,7 +327,13 @@ func (c *HAClient) RegisterRelay(name string, relays []RelayRule) error {
 		"name":   name,
 		"relays": relays,
 	})
-	resp, err := c.HTTPClient.Post(url, "application/json", bytes.NewBuffer(body))
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.do(req)
 	if err != nil {
 		log.Printf("upstream error: POST %s: %v", url, err)
 		return err
