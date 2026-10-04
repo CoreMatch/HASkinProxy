@@ -12,13 +12,20 @@ import (
 
 // New builds the gin engine. Static routes (/sdk/..., /customskinloader)
 // are registered before the /:username wildcard so they take precedence.
-func New(csl *handler.CSLHandler, webui *handler.WebUIHandler) *gin.Engine {
+func New(csl *handler.CSLHandler, webui *handler.WebUIHandler, auth *handler.AuthHandler) *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Logger(), gin.Recovery())
 
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
+
+	// Auth endpoints
+	authGroup := r.Group("/auth")
+	{
+		authGroup.GET("/captcha", auth.GetCaptcha)
+		authGroup.POST("/send-reset-code", auth.SendResetCode)
+	}
 
 	// WEBUI microservice integration: SDK JS relayed by HRPAuth to the
 	// WEBUI, and the CustomSkinLoader setup page embedded in the

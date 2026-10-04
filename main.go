@@ -11,6 +11,7 @@ import (
 	"haskinproxy/internal/handler"
 	"haskinproxy/internal/hrpauth"
 	"haskinproxy/internal/router"
+	"haskinproxy/internal/service"
 )
 
 const configFileName = "config.yaml"
@@ -31,6 +32,8 @@ func main() {
 	appCache := cache.NewCache()
 	cslHandler := handler.NewCSLHandler(haClient, appCache)
 	webUIHandler := handler.NewWebUIHandler()
+	authService := service.NewAuthService(appCache, haClient)
+	authHandler := handler.NewAuthHandler(authService)
 
 	// 2.1 Presence handshake with HRPAuth (bonjour), non-blocking
 	if config.AppConfig.Presence.Enabled {
@@ -38,7 +41,7 @@ func main() {
 	}
 
 	// 3. Setup router
-	engine := router.New(cslHandler, webUIHandler)
+	engine := router.New(cslHandler, webUIHandler, authHandler)
 
 	// 4. Start server
 	addr := config.AppConfig.Server.ListenAddr

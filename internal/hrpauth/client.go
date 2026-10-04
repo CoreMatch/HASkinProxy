@@ -197,6 +197,35 @@ func (c *HAClient) FetchTexture(hash string) ([]byte, http.Header, error) {
 	return data, resp.Header, nil
 }
 
+// CheckUserExistsByEmail calls GET /api/user?email=:email on the upstream
+// to check if a user exists with the given email.
+func (c *HAClient) CheckUserExistsByEmail(email string) (bool, error) {
+	url := c.BaseURL + "/api/user?email=" + email
+	log.Printf("upstream request: GET %s", url)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return false, err
+	}
+	resp, err := c.do(req)
+	if err != nil {
+		log.Printf("upstream error: GET %s: %v", url, err)
+		return false, err
+	}
+	defer resp.Body.Close()
+	log.Printf("upstream response: GET %s -> %d", url, resp.StatusCode)
+
+	if resp.StatusCode == http.StatusOK {
+		return true, nil
+	}
+	if resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusUnauthorized {
+		// HRPAuth might return 404 if user not found, or 401/403 if auth fails.
+		// If auth fails here, it's likely the user doesn't exist or we don't have permission.
+		// For the purpose of forgot password, we treat non-200 as not found.
+		return false, nil
+	}
+	return false, fmt.Errorf("upstream returned status %d", resp.StatusCode)
+}
+
 // StatusResponse models GET /status (only the fields HASkinProxy uses
 // are modeled). The actual response is flat: backend sits at the top
 // level (no success/data wrapper).

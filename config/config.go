@@ -31,6 +31,21 @@ type Config struct {
 		MaxSizeMB  int `yaml:"max_size_mb"`
 	} `yaml:"cache"`
 	Presence PresenceConfig `yaml:"presence"`
+	SMTP     SMTPConfig     `yaml:"smtp"`
+	Auth     AuthConfig     `yaml:"auth"`
+}
+
+type SMTPConfig struct {
+	Host      string `yaml:"host"`
+	Port      int    `yaml:"port"`
+	Username  string `yaml:"username"`
+	Password  string `yaml:"password"`
+	FromEmail string `yaml:"from_email"`
+	FromName  string `yaml:"from_name"`
+}
+
+type AuthConfig struct {
+	CodeTTL int `yaml:"code_ttl"` // in seconds
 }
 
 // PresenceConfig controls the microservice presence handshake with
@@ -94,5 +109,10 @@ func DefaultConfig() Config {
 		Enabled: true,
 		Name:    "HASkinProxy",
 	}
+	c.SMTP.Host = "smtp.example.com"
+	c.SMTP.Port = 587
+	c.SMTP.FromEmail = "noreply@example.com"
+	c.SMTP.FromName = "HASkinProxy"
+	c.Auth.CodeTTL = 600 // 10 minutes
 	return c
 }
