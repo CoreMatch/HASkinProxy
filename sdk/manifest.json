@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "name": "haskinproxy",
+  "version": "1.0.0",
+  "routes": [
+    {
+      "path": "/customskinloader",
+      "module": "src/pages/CSLSetup",
+      "title": "CustomSkinLoader"
+    }
+  ],
+  "menu": {
+    "label": "CustomSkinLoader",
+    "path": "/customskinloader"
+  },
+  "dashboard": {
+    "label": "CustomSkinLoader",
+    "path": "/customskinloader"
+  },
+  "dependencies": {},
+  "run_scripts": false
+}

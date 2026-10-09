@@ -6,11 +6,13 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"haskinproxy/config"
 	"haskinproxy/internal/model"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"strings"
 	"time"
@@ -197,55 +199,6 @@ func (c *HAClient) FetchTexture(hash string) ([]byte, http.Header, error) {
 	return data, resp.Header, nil
 }
 
-// StatusResponse models GET /status (only the fields HASkinProxy uses
-// are modeled). The actual response is flat: backend sits at the top
-// level (no success/data wrapper).
-type StatusResponse struct {
-	Status  string `json:"status"`
-	Backend struct {
-		Name    string `json:"name"`
-		URL     string `json:"url"`
-		Version string `json:"version"`
-	} `json:"backend"`
-	Message string `json:"message"`
-}
-
-// GetCallbackURL queries the main service's GET /status and returns
-// data.backend.url (the main service callback URL / public origin).
-// The sdk_url must be built on this origin (relayed URL), never on this
-// proxy's internal address: clients (browser / WEBUI) are not in the
-// same environment and cannot reach a localhost address.
-//
-//	200 with backend.url → url, nil
-//	other status / error  → "", error
-func (c *HAClient) GetCallbackURL() (string, error) {
-	url := c.BaseURL + "/status"
-	log.Printf("upstream request: GET %s", url)
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		return "", err
-	}
-	resp, err := c.do(req)
-	if err != nil {
-		log.Printf("upstream error: GET %s: %v", url, err)
-		return "", err
-	}
-	defer resp.Body.Close()
-	log.Printf("upstream response: GET %s -> %d", url, resp.StatusCode)
-
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("upstream returned status %d", resp.StatusCode)
-	}
-	var out StatusResponse
-	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
-		return "", err
-	}
-	if strings.TrimSpace(out.Backend.URL) == "" {
-		return "", fmt.Errorf("backend.url is empty")
-	}
-	return out.Backend.URL, nil
-}
-
 // PresenceScope is the scope declaration of a registered microservice.
 // A non-empty FrontendAreas makes the service visible to the frontends
 // whose areas overlap (see HA-Contract microservices.md).
@@ -257,7 +210,9 @@ type PresenceScope struct {
 // PresenceRequest is the body of the microservice presence handshake
 // (POST /services/presence, the "bonjour" handshake). Only the fields
 // HASkinProxy uses are modeled; optional contract fields (security_level,
-// interacts_with) are omitted and stay unset.
+// interacts_with) are omitted and stay unset. The legacy sdk_url field
+// is gone: SDKs are now delivered as source packages aggregated into the
+// frontend at compile time (see HA-Contract sdk-package.md).
 type PresenceRequest struct {
 	Name string `json:"name"`
 	// TTLSeconds is the self-declared lifetime in seconds; <=0 or
@@ -266,9 +221,6 @@ type PresenceRequest struct {
 	// Scope declares the frontend areas this service covers (e.g.
 	// webui-dash) so the WEBUI can discover it.
 	Scope *PresenceScope `json:"scope,omitempty"`
-	// SDKURL points to the JS file that tells the frontend how to embed
-	// this service; HRPAuth relays it unchanged via GET /services/sdk/:name.
-	SDKURL string `json:"sdk_url,omitempty"`
 }
 
 // RegisterPresence performs the microservice presence (bonjour)
@@ -300,6 +252,89 @@ func (c *HAClient) RegisterPresence(req PresenceRequest) error {
 	if resp.StatusCode != http.StatusOK {
 		_, _ = io.Copy(io.Discard, resp.Body)
 		return fmt.Errorf("upstream returned status %d", resp.StatusCode)
+	}
+	return nil
+}
+
+// ErrSDKPackageConflict is returned by UploadSDKPackage when a package
+// with the same name already exists on HRPAuth (409 sdk_package_conflict).
+// Replacing requires DELETE first (see HA-Contract sdk-package.md).
+var ErrSDKPackageConflict = errors.New("sdk package with the same name already exists")
+
+// UploadSDKPackage uploads a compile-time SDK package archive to HRPAuth
+// (POST /services/sdk-packages, multipart/form-data field "package").
+// Authentication reuses the client's existing Bearer ClientSecret
+// credentials, which resolve to Ops Level 2 on the main service.
+//
+//	2xx  (201)        → nil
+//	409               → ErrSDKPackageConflict
+//	other status      → error
+//	network error     → error
+func (c *HAClient) UploadSDKPackage(data []byte, filename string) error {
+	url := c.BaseURL + "/services/sdk-packages"
+
+	var buf bytes.Buffer
+	mw := multipart.NewWriter(&buf)
+	fw, err := mw.CreateFormFile("package", filename)
+	if err != nil {
+		return err
+	}
+	if _, err := fw.Write(data); err != nil {
+		return err
+	}
+	if err := mw.Close(); err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, url, &buf)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", mw.FormDataContentType())
+
+	resp, err := c.do(req)
+	if err != nil {
+		log.Printf("upstream error: POST %s: %v", url, err)
+		return err
+	}
+	defer resp.Body.Close()
+	log.Printf("upstream response: POST %s -> %d", url, resp.StatusCode)
+
+	switch {
+	case resp.StatusCode == http.StatusConflict:
+		_, _ = io.Copy(io.Discard, resp.Body)
+		return ErrSDKPackageConflict
+	case resp.StatusCode >= 200 && resp.StatusCode < 300:
+		_, _ = io.Copy(io.Discard, resp.Body)
+		return nil
+	default:
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("upstream returned status %d: %s", resp.StatusCode, strings.TrimSpace(string(body)))
+	}
+}
+
+// DeleteSDKPackage removes a previously uploaded SDK package
+// (DELETE /services/sdk-packages/:name). A 404 is treated as success since
+// the desired state is already reached.
+func (c *HAClient) DeleteSDKPackage(name string) error {
+	url := c.BaseURL + "/services/sdk-packages/" + name
+	log.Printf("upstream request: DELETE %s", url)
+	req, err := http.NewRequest(http.MethodDelete, url, nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.do(req)
+	if err != nil {
+		log.Printf("upstream error: DELETE %s: %v", url, err)
+		return err
+	}
+	defer resp.Body.Close()
+	log.Printf("upstream response: DELETE %s -> %d", url, resp.StatusCode)
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNotFound {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("upstream returned status %d: %s", resp.StatusCode, strings.TrimSpace(string(body)))
 	}
 	return nil
 }

@@ -13,10 +13,9 @@ type Config struct {
 	Server struct {
 		ListenAddr string `yaml:"listen_addr"`
 		// PublicURL is the externally reachable base URL of this proxy
-		// (e.g. http://localhost:2702). It is announced to HRPAuth in the
-		// presence handshake (sdk_url) and embedded in the WEBUI SDK so
-		// the frontend can locate the CustomSkinLoader setup page.
-		// Empty means the SDK falls back to a relative path.
+		// (e.g. http://localhost:2702). It is announced to HRPAuth as the
+		// relay source so the frontend can reach the CustomSkinLoader
+		// setup page through the main service origin.
 		PublicURL string `yaml:"public_url"`
 	} `yaml:"server"`
 	Upstream struct {
@@ -31,6 +30,18 @@ type Config struct {
 		MaxSizeMB  int `yaml:"max_size_mb"`
 	} `yaml:"cache"`
 	Presence PresenceConfig `yaml:"presence"`
+	SDK      SDKConfig      `yaml:"sdk"`
+}
+
+// SDKConfig controls the compile-time SDK package upload. On startup the
+// proxy packs the embedded sdk/ source tree (manifest.json + React page)
+// into a tar.gz archive and uploads it to HRPAuth (POST
+// /services/sdk-packages); the WebUI SDK handler aggregates it into the
+// frontend build (see HA-Contract sdk-package.md). A failed upload is
+// logged but never blocks or stops the proxy.
+type SDKConfig struct {
+	// Enabled toggles the automatic SDK package upload. Default true.
+	Enabled bool `yaml:"enabled"`
 }
 
 // PresenceConfig controls the microservice presence handshake with
@@ -93,6 +104,9 @@ func DefaultConfig() Config {
 	c.Presence = PresenceConfig{
 		Enabled: true,
 		Name:    "HASkinProxy",
+	}
+	c.SDK = SDKConfig{
+		Enabled: true,
 	}
 	return c
 }
