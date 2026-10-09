@@ -20,10 +20,10 @@ func TestCSLHandler_GetProfile(t *testing.T) {
 	// 1. Mock HA Server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case "/api/profiles/minecraft":
+		case "/yggdrasil-api/api/profiles/minecraft":
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode([]model.ProfileResponse{{ID: "test-uuid", Name: "TestUser"}})
-		case "/sessionserver/session/minecraft/profile/test-uuid":
+		case "/yggdrasil-api/sessionserver/session/minecraft/profile/test-uuid":
 			w.Header().Set("Content-Type", "application/json")
 			profile := model.SessionProfileResponse{
 				ID:   "test-uuid",

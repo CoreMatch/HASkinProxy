@@ -4,6 +4,7 @@ package hrpauth
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -16,41 +17,64 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/clientcredentials"
 )
 
 type HAClient struct {
-	BaseURL      string
-	HTTPClient   *http.Client
-	ClientID     string
-	ClientSecret string
+	BaseURL          string
+	YggdrasilBaseURL string
+	HTTPClient       *http.Client
+	ClientID         string
+	ClientSecret     string
+	tokenSource      oauth2.TokenSource
 }
 
 func NewHAClient() *HAClient {
-	return &HAClient{
-		BaseURL: config.AppConfig.Upstream.BaseURL,
-		HTTPClient: &http.Client{
-			Timeout: time.Duration(config.AppConfig.Upstream.Timeout) * time.Second,
-		},
-		ClientID:     config.AppConfig.Upstream.ClientID,
-		ClientSecret: config.AppConfig.Upstream.ClientSecret,
+	baseURL := strings.TrimRight(config.AppConfig.Upstream.BaseURL, "/")
+	httpClient := &http.Client{
+		Timeout: time.Duration(config.AppConfig.Upstream.Timeout) * time.Second,
 	}
+	client := &HAClient{
+		BaseURL:          baseURL,
+		YggdrasilBaseURL: baseURL + "/yggdrasil-api",
+		HTTPClient:       httpClient,
+		ClientID:         config.AppConfig.Upstream.ClientID,
+		ClientSecret:     config.AppConfig.Upstream.ClientSecret,
+	}
+	if client.ClientID != "" && client.ClientSecret != "" {
+		ctx := context.WithValue(context.Background(), oauth2.HTTPClient, httpClient)
+		conf := &clientcredentials.Config{
+			ClientID:     client.ClientID,
+			ClientSecret: client.ClientSecret,
+			TokenURL:     client.BaseURL + "/oauth/token",
+		}
+		client.tokenSource = oauth2.ReuseTokenSource(nil, conf.TokenSource(ctx))
+	}
+	return client
 }
 
 func (c *HAClient) do(req *http.Request) (*http.Response, error) {
-	// If ClientID and ClientSecret are set, we assume ClientSecret is a
-	// static OAuth2 token (as per "oauth2 client id/token" instructions).
-	// We only set it if the caller hasn't already provided an Authorization
-	// header (e.g. for user-initiated proxy requests).
-	if c.ClientID != "" && c.ClientSecret != "" && req.Header.Get("Authorization") == "" {
-		req.Header.Set("Authorization", "Bearer "+c.ClientSecret)
-		req.Header.Set("X-Client-ID", c.ClientID)
+	// Service-side calls authenticate through OAuth2 client_credentials.
+	// Caller-provided Authorization headers (e.g. end-user operations) win.
+	if req.Header.Get("Authorization") == "" && c.tokenSource != nil {
+		token, err := c.tokenSource.Token()
+		if err != nil {
+			return nil, err
+		}
+		token.SetAuthHeader(req)
 	}
 	return c.HTTPClient.Do(req)
 }
 
+func (c *HAClient) yggURL(path string) string {
+	return c.YggdrasilBaseURL + path
+}
+
 // GetUUIDByUsername calls POST /api/profiles/minecraft
 func (c *HAClient) GetUUIDByUsername(username string) (string, error) {
-	url := c.BaseURL + "/api/profiles/minecraft"
+	url := c.yggURL("/api/profiles/minecraft")
 	log.Printf("upstream request: POST %s (username=%s)", url, username)
 	reqBody, _ := json.Marshal([]string{username})
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(reqBody))
@@ -85,7 +109,7 @@ func (c *HAClient) GetUUIDByUsername(username string) (string, error) {
 
 // GetProfileByUUID calls GET /sessionserver/session/minecraft/profile/:uuid
 func (c *HAClient) GetProfileByUUID(uuid string) (*model.SessionProfileResponse, error) {
-	url := c.BaseURL + "/sessionserver/session/minecraft/profile/" + uuid
+	url := c.yggURL("/sessionserver/session/minecraft/profile/" + uuid)
 	log.Printf("upstream request: GET %s", url)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -146,7 +170,7 @@ func DecodeTextures(property model.ProfileProperty) (*model.TexturePropertyValue
 //	other status → body, status, header, nil  (upstream decided the failure)
 //	network err  → nil, 0, nil, err
 func (c *HAClient) DeleteTexture(body []byte, authHeader string) ([]byte, int, http.Header, error) {
-	url := c.BaseURL + "/texture/delete"
+	url := c.yggURL("/texture/delete")
 	log.Printf("upstream request: POST %s", url)
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
@@ -173,7 +197,7 @@ func (c *HAClient) DeleteTexture(body []byte, authHeader string) ([]byte, int, h
 
 // FetchTexture fetches the raw texture bytes from /textures/:hash
 func (c *HAClient) FetchTexture(hash string) ([]byte, http.Header, error) {
-	url := c.BaseURL + "/textures/" + hash
+	url := c.yggURL("/textures/" + hash)
 	log.Printf("upstream request: GET %s", url)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {

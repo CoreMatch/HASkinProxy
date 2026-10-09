@@ -19,8 +19,12 @@ type Config struct {
 		PublicURL string `yaml:"public_url"`
 	} `yaml:"server"`
 	Upstream struct {
-		BaseURL      string `yaml:"base_url"`
-		Timeout      int    `yaml:"timeout"` // in seconds
+		// BaseURL is the HRPAuth main service base URL. Yggdrasil API
+		// requests are routed through HA's /yggdrasil-api relay prefix.
+		BaseURL string `yaml:"base_url"`
+		Timeout int    `yaml:"timeout"` // in seconds
+		// Client credentials are exchanged for an OAuth2 service token via
+		// POST /oauth/token (grant_type=client_credentials).
 		ClientID     string `yaml:"client_id"`
 		ClientSecret string `yaml:"client_secret"`
 	} `yaml:"upstream"`
@@ -94,7 +98,7 @@ func DefaultConfig() Config {
 	c := Config{}
 	c.Server.ListenAddr = ":2702"
 	c.Server.PublicURL = "http://localhost:2702"
-	c.Upstream.BaseURL = "http://localhost:2778" // Default upstream URL
+	c.Upstream.BaseURL = "http://localhost:2778"
 	c.Upstream.Timeout = 10
 	c.Upstream.ClientID = ""
 	c.Upstream.ClientSecret = ""
