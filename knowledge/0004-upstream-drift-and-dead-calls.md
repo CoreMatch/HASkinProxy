@@ -43,8 +43,8 @@ Recorded drift items, each verified:
    - Management calls (`/services/presence`, `/services/relay`, `/status`,
      `/api/user?email=`) only resolve against the HRPAuth **root** (the
      relay serves `/yggdrasil-api/*` only and skips `/services/*`).
-   With the default base URL (`http://localhost:2778`, the root), the CSL
-   core flow 404s; with a `/yggdrasil-api` base URL, presence/relay
+   With the default base URL (`http://localhost`, port `2778`, the root),
+   the CSL core flow 404s; with a `/yggdrasil-api` base URL, presence/relay
    registration and the email check 404 instead. There is no configuration
    on `main` that makes everything work.
 3. **Email existence check uses a non-existent endpoint.**
@@ -56,21 +56,26 @@ Recorded drift items, each verified:
    Service-side requests send `Authorization: Bearer {client_secret}` plus
    `X-Client-ID` instead of an OAuth2 client-credentials token exchange.
    Checked against the contract (2026-11-04):
-   - HA-Contract `docs/dev/HRPAuth/tokens.md:30` — the "Built-in Super
+   - [xref] HA-Contract `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HRPAuth/tokens.md:L30 @ 21c7147d`
+     — the "Built-in Super
      Client Secret" (`client_secret`) is a credential **for
      `client_credentials`**, and its listed usage endpoint is only
      `POST /oauth/token (grant_type=client_credentials)`.
-   - HA-Contract `docs/dev/HRPAuth/microservices.md:94` — "Used for all
+   - [xref] HA-Contract `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HRPAuth/microservices.md:L94 @ 21c7147d`
+     — "Used for all
      microservice -> HRPAuth Core API calls. Microservices must provide a
      Bearer token obtained via the `client_credentials` grant."
-   - HA-Contract `docs/dev/HRPAuth/microservices.md:382` — auth-level
+   - [xref] HA-Contract `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HRPAuth/microservices.md:L382 @ 21c7147d`
+     — auth-level
      resolution: "no `Authorization: Bearer` → `0`; token equals M-T →
      `2`; resolvable OAuth2 token → `2` if service token, else `1`;
      unresolvable → `0`." A raw `client_secret` is not an issued token and
      is not the M-T, so it resolves to level 0.
    - The only static bearer the contract accepts is the legacy Maintenance
-     Token (`tokens.md:38`, `microservices.md:380`), explicitly marked
-     legacy (`tokens.md:42`).
+     Token ([xref] `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HRPAuth/tokens.md:L38 @ 21c7147d`,
+     [xref] `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HRPAuth/microservices.md:L380 @ 21c7147d`),
+     explicitly marked legacy
+     ([xref] `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HRPAuth/tokens.md:L42 @ 21c7147d`).
    Conclusion: presenting `client_secret` directly as a Bearer is **not
    sanctioned by the contract**; management calls that need auth level ≥ 1
    will fail or be treated as anonymous. (Whether the running HRPAuth
@@ -103,41 +108,64 @@ Recorded drift items, each verified:
 ## Evidence
 
 - Delete passthrough target and verbatim forwarding:
-  `internal/hrpauth/client.go:134-170` (URL at `:147`, JSON content type at
-  `:153`), `internal/handler/csl_handler.go:138-194` (legacy field list at
-  `:144-146`), HEAD of `main` `b4a041ec`.
+  `internal/hrpauth/client.go:L134-L170 @ b4a041ec` (URL at
+  `internal/hrpauth/client.go:L147 @ b4a041ec`, JSON content type at
+  `internal/hrpauth/client.go:L153 @ b4a041ec`),
+  `internal/handler/csl_handler.go:L138-L194 @ b4a041ec` (legacy field
+  list at `internal/handler/csl_handler.go:L144-L146 @ b4a041ec`),
+  HEAD of `main` `b4a041ec`.
 - Upstream route reality (repo HRPAuth-Yggdrasil-API @ `124b2fa1`):
-  `main.go:192` registers `DELETE /texture/delete/:uuid/:type`; no
+  [xref] `/home/lnb/Desktop/HA/HRPAuth-Yggdrasil-API/main.go:L192 @ 124b2fa1`
+  registers `DELETE /texture/delete/:uuid/:type`; no
   `POST /texture/delete` exists (verified by route listing, 2026-11-04).
 - HA-Contract legacy-passthrough statement (repo HA-Contract @ `21c7147d`):
-  `docs/dev/HASkinProxy/README.md`, section "Texture Management
+  `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HASkinProxy/README.md`,
+  section "Texture Management
   Passthrough (Legacy Compatibility)" — "Against the current HA upstream
   this path is not registered, so the forwarder receives a 404." Note: the
   contract text describes the `10426` target
   (`{upstream.base_url}/yggdrasil-api/texture/delete`); on `main` the
   target is `{upstream.base_url}/texture/delete` — both are unregistered.
 - Relay prefix mechanics (repo HRPAuth @ `8dd67593`):
-  `controllers/relay_controller.go:172-199` (longest-prefix match),
-  `:283-316` (forward with prefix stripped), `:274-277` (`/yggdrasil-api`
-  allowed anonymously), `:286-289` (`/services/*` never relayed).
-- HRPAuth root lacks Yggdrasil routes: `HRPAuth/main.go` route listing —
-  `api := r.Group("")` at `:174`; no `sessionserver`,
+  [xref] `/home/lnb/Desktop/HA/HRPAuth/controllers/relay_controller.go:L172-L199 @ 8dd67593`
+  (longest-prefix match),
+  [xref] `/home/lnb/Desktop/HA/HRPAuth/controllers/relay_controller.go:L283-L316 @ 8dd67593`
+  (forward with prefix stripped),
+  [xref] `/home/lnb/Desktop/HA/HRPAuth/controllers/relay_controller.go:L274-L277 @ 8dd67593`
+  (`/yggdrasil-api` allowed anonymously),
+  [xref] `/home/lnb/Desktop/HA/HRPAuth/controllers/relay_controller.go:L286-L289 @ 8dd67593`
+  (`/services/*` never relayed).
+- HRPAuth root lacks Yggdrasil routes: HRPAuth `main.go` route listing —
+  [xref] `/home/lnb/Desktop/HA/HRPAuth/main.go:L174 @ 8dd67593`
+  (`api := r.Group("")`); no `sessionserver`,
   `/api/profiles/minecraft`, or `/textures` routes (verified 2026-11-04).
 - Single BaseURL usage: every URL in `internal/hrpauth/client.go` is
-  `c.BaseURL + path` (`:51,86,147,174,203,251,312,353`); default base URL
-  `config/config.go:101`.
-- Email check: `internal/hrpauth/client.go:200-227`; consumer
-  `internal/service/auth_service.go:45-52`; upstream side
-  `HRPAuth/main.go:198` (`POST /user`; there is no `/api/user` route).
-- Static bearer auth: `internal/hrpauth/client.go:37-47`; introduced by
-  commit `b19585ca417ce2e482ebe6fc7cb291ea9ea035aa` ("feat(upstream):
-  implement client id/secret auth", 2026-10-04).
+  `c.BaseURL + path` (`internal/hrpauth/client.go:L51 @ b4a041ec`,
+  `internal/hrpauth/client.go:L86 @ b4a041ec`,
+  `internal/hrpauth/client.go:L147 @ b4a041ec`,
+  `internal/hrpauth/client.go:L174 @ b4a041ec`,
+  `internal/hrpauth/client.go:L203 @ b4a041ec`,
+  `internal/hrpauth/client.go:L251 @ b4a041ec`,
+  `internal/hrpauth/client.go:L312 @ b4a041ec`,
+  `internal/hrpauth/client.go:L353 @ b4a041ec`); default base URL
+  `config/config.go (field: base_url)`.
+- Email check: `internal/hrpauth/client.go:L200-L227 @ b4a041ec`; consumer
+  `internal/service/auth_service.go:L45-L52 @ b4a041ec`; upstream side
+  [xref] `/home/lnb/Desktop/HA/HRPAuth/main.go:L198 @ 8dd67593`
+  (`POST /user`; there is no `/api/user` route).
+- Static bearer auth: `internal/hrpauth/client.go:L37-L47 @ b4a041ec`;
+  introduced by commit `b19585ca417ce2e482ebe6fc7cb291ea9ea035aa`
+  ("feat(upstream): implement client id/secret auth", 2026-10-04).
 - Contract verdict on static bearer (repo HA-Contract @ `21c7147d`):
-  `docs/dev/HRPAuth/tokens.md:30` (client_secret usage limited to
-  `POST /oauth/token` client_credentials), `:38` and `:42` (M-T is the only
-  static bearer, marked legacy), `docs/dev/HRPAuth/microservices.md:94`
+  [xref] `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HRPAuth/tokens.md:L30 @ 21c7147d`
+  (client_secret usage limited to `POST /oauth/token` client_credentials),
+  [xref] `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HRPAuth/tokens.md:L38 @ 21c7147d`
+  and [xref] `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HRPAuth/tokens.md:L42 @ 21c7147d`
+  (M-T is the only static bearer, marked legacy),
+  [xref] `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HRPAuth/microservices.md:L94 @ 21c7147d`
   (client_credentials grant mandatory for microservice→core calls),
-  `:379-382` (auth-level resolution; unresolvable token → 0).
+  [xref] `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HRPAuth/microservices.md:L379-L382 @ 21c7147d`
+  (auth-level resolution; unresolvable token → 0).
 - `10426` fixes: branch tip `a83de4d259b66f0e160b8cfbc76f1801050ad07e`;
   commits `80fdcfb` (OAuth2 client auth + `/yggdrasil-api` paths),
   `6830c9c` (compile-time SDK package).
