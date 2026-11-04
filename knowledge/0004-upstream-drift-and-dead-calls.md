@@ -52,11 +52,30 @@ Recorded drift items, each verified:
    `POST /api/user` (no GET variant, no email query form). The reset-code
    flow treats any non-200 as "user not found", so the check degrades to
    always-false rather than erroring.
-4. **Auth style is a static bearer.** Service-side requests send
-   `Authorization: Bearer {client_secret}` plus `X-Client-ID` instead of an
-   OAuth2 client-credentials token exchange. Whether the current HRPAuth
-   accepts a raw secret as a bearer token is upstream policy — **not
-   verified** here.
+4. **Auth style is a static bearer — the contract does not allow it.**
+   Service-side requests send `Authorization: Bearer {client_secret}` plus
+   `X-Client-ID` instead of an OAuth2 client-credentials token exchange.
+   Checked against the contract (2026-11-04):
+   - HA-Contract `docs/dev/HRPAuth/tokens.md:30` — the "Built-in Super
+     Client Secret" (`client_secret`) is a credential **for
+     `client_credentials`**, and its listed usage endpoint is only
+     `POST /oauth/token (grant_type=client_credentials)`.
+   - HA-Contract `docs/dev/HRPAuth/microservices.md:94` — "Used for all
+     microservice -> HRPAuth Core API calls. Microservices must provide a
+     Bearer token obtained via the `client_credentials` grant."
+   - HA-Contract `docs/dev/HRPAuth/microservices.md:382` — auth-level
+     resolution: "no `Authorization: Bearer` → `0`; token equals M-T →
+     `2`; resolvable OAuth2 token → `2` if service token, else `1`;
+     unresolvable → `0`." A raw `client_secret` is not an issued token and
+     is not the M-T, so it resolves to level 0.
+   - The only static bearer the contract accepts is the legacy Maintenance
+     Token (`tokens.md:38`, `microservices.md:380`), explicitly marked
+     legacy (`tokens.md:42`).
+   Conclusion: presenting `client_secret` directly as a Bearer is **not
+   sanctioned by the contract**; management calls that need auth level ≥ 1
+   will fail or be treated as anonymous. (Whether the running HRPAuth
+   build additionally tolerates it is an implementation question the
+   contract does not cover — not checked here.)
 
 ## Consequences
 
@@ -106,6 +125,12 @@ Recorded drift items, each verified:
 - Static bearer auth: `internal/hrpauth/client.go:37-47`; introduced by
   commit `b19585ca417ce2e482ebe6fc7cb291ea9ea035aa` ("feat(upstream):
   implement client id/secret auth", 2026-10-04).
+- Contract verdict on static bearer (repo HA-Contract @ `21c7147d`):
+  `docs/dev/HRPAuth/tokens.md:30` (client_secret usage limited to
+  `POST /oauth/token` client_credentials), `:38` and `:42` (M-T is the only
+  static bearer, marked legacy), `docs/dev/HRPAuth/microservices.md:94`
+  (client_credentials grant mandatory for microservice→core calls),
+  `:379-382` (auth-level resolution; unresolvable token → 0).
 - `10426` fixes: branch tip `a83de4d259b66f0e160b8cfbc76f1801050ad07e`;
   commits `80fdcfb` (OAuth2 client auth + `/yggdrasil-api` paths),
   `6830c9c` (compile-time SDK package).
