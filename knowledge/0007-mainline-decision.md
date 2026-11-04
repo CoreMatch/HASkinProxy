@@ -80,10 +80,13 @@ more actively maintained; `main` is not.
   confirmation** (note: the contract removed the runtime WEBUI surface that
   flow belonged to, so a revival needs design work, not just a
   cherry-pick).
-- The branch name `10426` is historical; its meaning is not recorded
-  anywhere in the repositories (see README baseline note). It is **not
-  renamed**, because renaming would break every existing clone, CI
-  reference, and deployment script.
+- The branch name `10426` was confirmed by the author on 2026-11-05: it
+  denotes the date **2026-10-04** (`10/4/26`), matching the reflog branch
+  creation time 2026-10-04 14:31 — a date marker, not a functional
+  codename. The branch is still **not renamed**: the name is already
+  referenced by existing clones, the remote default-branch setting, and
+  deployment/CI expectations, and renaming would break them without any
+  functional gain.
 - Single mainline from now on: knowledge-base entries and fixes land only
   on `10426`; the previous double-write practice is ended.
 - Earlier entries in this directory were authored against `main` @
