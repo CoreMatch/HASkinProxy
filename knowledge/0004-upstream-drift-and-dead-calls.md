@@ -49,9 +49,9 @@ Recorded drift items, each verified:
    on `main` that makes everything work.
 3. **Email existence check uses a non-existent endpoint.**
    `GET {base}/api/user?email={email}` — HRPAuth root registers
-   `POST /api/user` (no GET variant, no email query form). The reset-code
-   flow treats any non-200 as "user not found", so the check degrades to
-   always-false rather than erroring.
+   `POST /user` (no GET variant, no email query form, and no `/api/user`
+   route at all). The reset-code flow treats any non-200 as "user not
+   found", so the check degrades to always-false rather than erroring.
 4. **Auth style is a static bearer — the contract does not allow it.**
    Service-side requests send `Authorization: Bearer {client_secret}` plus
    `X-Client-ID` instead of an OAuth2 client-credentials token exchange.
@@ -128,7 +128,7 @@ Recorded drift items, each verified:
   `config/config.go:101`.
 - Email check: `internal/hrpauth/client.go:200-227`; consumer
   `internal/service/auth_service.go:45-52`; upstream side
-  `HRPAuth/main.go:198` (`POST /api/user`).
+  `HRPAuth/main.go:198` (`POST /user`; there is no `/api/user` route).
 - Static bearer auth: `internal/hrpauth/client.go:37-47`; introduced by
   commit `b19585ca417ce2e482ebe6fc7cb291ea9ea035aa` ("feat(upstream):
   implement client id/secret auth", 2026-10-04).
