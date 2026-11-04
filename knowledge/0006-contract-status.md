@@ -10,7 +10,8 @@ Accepted
 
 ## Context
 
-HA-Contract keeps per-service OpenAPI files under `docs/api/openapi/`
+HA-Contract keeps per-service OpenAPI files under
+`/home/lnb/Desktop/HA/HA-Contract/docs/api/openapi/`
 (`hrpauth-business.yaml`, `haskinlib-business.yaml`,
 `hrpauth-yggdrasil-business.yaml`, `matchcorearena-business.yaml`,
 `cascade-backend-v1.yaml`). HASkinProxy has **no** OpenAPI file there.
@@ -18,9 +19,11 @@ HA-Contract keeps per-service OpenAPI files under `docs/api/openapi/`
 ## Decision
 
 1. **Current state (verified 2026-11-04):** HASkinProxy's external surface
-   is documented in HA-Contract `docs/dev/HASkinProxy/README.md`
+   is documented in HA-Contract
+   `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HASkinProxy/README.md`
    (architecture flow, endpoint table, legacy delete-passthrough note) plus
-   `docs/references/CustomSkinAPI.md` for the CSL wire format. There is no
+   `/home/lnb/Desktop/HA/HA-Contract/docs/references/CustomSkinAPI.md`
+   for the CSL wire format. There is no
    `haskinproxy-business.yaml`.
 2. **Handling while the contract file is missing** (policy):
    - The implementation reference is the code plus the HA-Contract dev doc;
@@ -56,10 +59,14 @@ package).
 ## Evidence
 
 - OpenAPI directory contents (no haskinproxy file): repo HA-Contract
-  (@ `21c7147d`), `docs/api/openapi/` listing (verified 2026-11-04).
+  (@ `21c7147d`), `/home/lnb/Desktop/HA/HA-Contract/docs/api/openapi/`
+  listing (verified 2026-11-04).
 - Dev doc as the external reference: repo HA-Contract,
-  `docs/dev/HASkinProxy/README.md` (endpoint table and passthrough note);
-  this repo's README links to it at `README.md:13-15`.
-- README endpoint list including `GET /customskinloader`: `README.md:70-75`.
+  `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HASkinProxy/README.md`
+  (endpoint table and passthrough note);
+  this repo's README links to it at `README.md:L13-L15`.
+- README endpoint list including `GET /customskinloader`:
+  `README.md:L70-L75 @ b4a041ec`.
 - `docs/api/README.md` positioning ("OpenAPI is the source for paths and
-  response structures"): repo HA-Contract, `docs/api/README.md`.
+  response structures"): repo HA-Contract,
+  `/home/lnb/Desktop/HA/HA-Contract/docs/api/README.md`.

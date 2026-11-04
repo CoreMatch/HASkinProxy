@@ -47,7 +47,8 @@ HASkinProxy is downstream of it and unaware of it.
 
 ## Evidence
 
-- Texture fetch from Yggdrasil surface: `internal/hrpauth/client.go:172-198`
+- Texture fetch from Yggdrasil surface:
+  `internal/hrpauth/client.go:L172-L198 @ b4a041ec`
   (`FetchTexture` → `{BaseURL}/textures/{hash}`), HEAD of `main`
   `b4a041ec`.
 - No HASkinLib reference anywhere in this repo: search for `skinlib` in
@@ -57,4 +58,4 @@ HASkinProxy is downstream of it and unaware of it.
 - HASkinLib side of the story (repo HASkinLib @ `54eee2f1`):
   `knowledge/0005-division-of-labor-with-skinproxy-and-yggdrasil.md`.
 - Package layout convention ("mirroring ... WinnerProxy"):
-  `internal/hrpauth/client.go:1-3`, `internal/router/router.go:1-2`.
+  `internal/hrpauth/client.go:L1-L3`, `internal/router/router.go:L1-L2`.

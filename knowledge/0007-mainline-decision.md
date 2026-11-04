@@ -53,9 +53,11 @@ Qualitative signals:
 - Recency: last substantive commit `main` 2026-10-04 14:22 +0800 vs
   `10426` 2026-11-03 23:50 +0800 — a full month apart, `10426` still
   active the day before this decision.
-- Contract alignment: HA-Contract `docs/dev/HRPAuth/microservices.md:154`
+- Contract alignment: HA-Contract
+  [xref] `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HRPAuth/microservices.md:L154 @ 21c7147d`
   removes the runtime JS SDK model that `main` still implements, and
-  `microservices.md:94` mandates the client-credentials grant that only
+  [xref] `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HRPAuth/microservices.md:L94 @ 21c7147d`
+  mandates the client-credentials grant that only
   `10426` implements; HA-Contract's HASkinProxy dev doc describes the
   `10426` design.
 - Deployment capability: only `10426` has the Docker build consumed by
@@ -111,5 +113,7 @@ more actively maintained; `main` is not.
 - Archive tag: `archive/main-2026-11-04` → `8a5f8f09` (pushed to origin
   before the branch deletion).
 - Contract citations: repo HA-Contract (@ `21c7147d`),
-  `docs/dev/HRPAuth/microservices.md:94,154`;
-  `docs/dev/HASkinProxy/README.md` (describes the `10426` design).
+  [xref] `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HRPAuth/microservices.md:L94 @ 21c7147d`,
+  [xref] `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HRPAuth/microservices.md:L154 @ 21c7147d`;
+  `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HASkinProxy/README.md`
+  (describes the `10426` design).
