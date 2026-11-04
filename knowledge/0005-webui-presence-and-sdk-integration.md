@@ -67,31 +67,40 @@ page to the dashboard.
 
 ## Evidence
 
-- Presence + relay registration: `main.go:65-127` (sdk_url from callback at
-  `:78-105`; relay rules at `:110-121`), HEAD of `main` `b4a041ec`.
-- Callback URL resolution: `internal/hrpauth/client.go:229-276`
+- Presence + relay registration: `main.go:L65-L127 @ b4a041ec` (sdk_url
+  from callback at `main.go:L78-L105 @ b4a041ec`; relay rules at
+  `main.go:L110-L121 @ b4a041ec`), HEAD of `main` `b4a041ec`.
+- Callback URL resolution: `internal/hrpauth/client.go:L229-L276 @ b4a041ec`
   (`GET /status` → `backend.url`).
-- Presence/relay client calls: `internal/hrpauth/client.go:311-334`
-  (`/services/presence`), `:352-378` (`/services/relay`).
-- SDK JS content and content type: `internal/handler/webui_handler.go:9-46`.
-- Setup page handler: `internal/handler/webui_handler.go:48-55` (API root
-  derivation described at `:49-51`).
-- Auth helper routes: `internal/router/router.go:24-29`; handlers
-  `internal/handler/auth_handler.go:11-103`; service
-  `internal/service/auth_service.go:24-135` (captcha `:32-43`, reset code
-  `:45-130`).
-- SMTP / code TTL config: `config/config.go:38-49,112-116`.
+- Presence/relay client calls: `internal/hrpauth/client.go:L311-L334 @ b4a041ec`
+  (`/services/presence`), `internal/hrpauth/client.go:L352-L378 @ b4a041ec`
+  (`/services/relay`).
+- SDK JS content and content type: `internal/handler/webui_handler.go:L9-L46 @ b4a041ec`.
+- Setup page handler: `internal/handler/webui_handler.go:L48-L55 @ b4a041ec`
+  (API root derivation described at
+  `internal/handler/webui_handler.go:L49-L51 @ b4a041ec`).
+- Auth helper routes: `internal/router/router.go:L24-L29 @ b4a041ec`;
+  handlers `internal/handler/auth_handler.go:L11-L103 @ b4a041ec`; service
+  `internal/service/auth_service.go:L24-L135 @ b4a041ec` (captcha
+  `internal/service/auth_service.go:L32-L43 @ b4a041ec`, reset code
+  `internal/service/auth_service.go:L45-L130 @ b4a041ec`).
+- SMTP / code TTL config: `config/config.go:L38-L49 @ b4a041ec`,
+  `config/config.go:L112-L116 @ b4a041ec`.
 - Commits: presence `cbcdecaf69c91ed227f17822278fdcd084bb2f57` (2026-09-01),
   CSL relay `1755ae81c39a9c151dc53c770dc2beea72f887cf` (2026-09-01),
   reset flow `4ae8a10cba9db050ac615513a933c6edea014de5` + `b4a041ec` (HEAD
   of `main`).
 - Contract-side description of the newer SDK mechanism: repo HA-Contract
-  (@ `21c7147d`), `docs/dev/HASkinProxy/README.md` ("shipped as a
-  compile-time SDK package").
+  (@ `21c7147d`),
+  `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HASkinProxy/README.md`
+  ("shipped as a compile-time SDK package").
 - Contract auth model for these management calls (repo HA-Contract
-  @ `21c7147d`): `docs/dev/HRPAuth/microservices.md:94` (microservice→core
-  calls must use a Bearer token from the `client_credentials` grant),
-  `:97-118` (temporary internal key via `POST /services/auth-key`,
+  @ `21c7147d`):
+  [xref] `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HRPAuth/microservices.md:L94 @ 21c7147d`
+  (microservice→core calls must use a Bearer token from the
+  `client_credentials` grant),
+  [xref] `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HRPAuth/microservices.md:L97-L118 @ 21c7147d`
+  (temporary internal key via `POST /services/auth-key`,
   authenticated with client-credentials Bearer). The `main`-branch static
   bearer therefore also falls short of the contract here — see entry
   [0004](./0004-upstream-drift-and-dead-calls.md) item 4.
