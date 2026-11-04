@@ -20,18 +20,40 @@ self-hosting and maintenance.
 ## Important baseline note
 
 Entries were authored against branch `main` at `b4a041ec` and cite
-`file:line` evidence from that tree. Note the repository situation at
-writing time (2026-11-04):
+`file:line` evidence from that tree. Note the repository situation
+(verified 2026-11-04 with reproducible commands):
 
-- The remote's default/HEAD branch is **`10426`** (`a83de4d2`), not
-  `main`. `main` (`b4a041ec`) is a strict ancestor of `10426`; the remote
-  `main` branch had been absent and was recreated when this knowledge base
-  was pushed.
-- Branch `10426` contains already-pushed, unmerged-into-main changes:
-  OAuth2 client-credentials auth, `/yggdrasil-api` path prefixing,
-  compile-time SDK package delivery, Docker build. Where relevant, entries
-  call out the divergence; see especially entry
+- **Branch `10426` exists — locally and on the remote.** The author
+  questioned this name, so the verification is recorded here:
+  - `git branch -a` (local clone): `* 10426`, `main`,
+    `remotes/origin/10426`, `remotes/origin/main`.
+  - `git ls-remote --heads origin` raw output:
+    `1facc2d69d88218aac33417b0e717318ed717c61  refs/heads/10426` and
+    `7dc747be62967c82ea0e106fc08b6ceece5d5336  refs/heads/main`.
+  - `git ls-remote origin` shows `HEAD` pointing at the `10426` tip, i.e.
+    the remote's default branch is `10426`.
+  - Provenance: `git reflog show 10426` records
+    `b19585c 10426@{2026-10-04 14:31:25 +0800}: branch: Created from
+    b19585ca417ce2e482ebe6fc7cb291ea9ea035aa` — the branch was created in
+    this local clone on 2026-10-04, before this knowledge base existed.
+  - The string `10426` is **not** a commit-hash prefix
+    (`git rev-parse --disambiguate=10426` returns nothing), appears in no
+    tracked file other than this knowledge base, and in no commit message
+    other than the knowledge-base merges. It does not appear in the other
+    HA repositories either. The name was chosen by whoever created the
+    branch locally (possibly a ticket/issue number — **not verified**).
+- `main` (`b4a041ec`) and `10426` (tip `a83de4d2` before the knowledge
+  merge) **diverged** from `b19585c` (`git merge-base main 10426`):
+  `main` carries the password-reset auth flow; `10426` carries OAuth2
+  client-credentials auth, `/yggdrasil-api` path prefixing, compile-time
+  SDK package delivery, and the Docker build. Merging one into the other
+  conflicts in business code. Where relevant, entries call out the
+  divergence; see especially entry
   [0004](./0004-upstream-drift-and-dead-calls.md).
+- The remote `main` branch had been absent and was recreated when this
+  knowledge base was pushed (2026-11-04). Since `10426` is real and is the
+  remote default, the recreated `main` is kept as the home of the
+  main-baselined knowledge; deleting it again is the author's call.
 - When reading an entry on a `10426` checkout, re-check the cited lines:
   `internal/hrpauth/client.go`, `internal/router/router.go` and `main.go`
   differ between the two branches.

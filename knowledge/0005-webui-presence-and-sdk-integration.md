@@ -82,3 +82,10 @@ page to the dashboard.
 - Contract-side description of the newer SDK mechanism: repo HA-Contract
   (@ `21c7147d`), `docs/dev/HASkinProxy/README.md` ("shipped as a
   compile-time SDK package").
+- Contract auth model for these management calls (repo HA-Contract
+  @ `21c7147d`): `docs/dev/HRPAuth/microservices.md:94` (microservice→core
+  calls must use a Bearer token from the `client_credentials` grant),
+  `:97-118` (temporary internal key via `POST /services/auth-key`,
+  authenticated with client-credentials Bearer). The `main`-branch static
+  bearer therefore also falls short of the contract here — see entry
+  [0004](./0004-upstream-drift-and-dead-calls.md) item 4.
