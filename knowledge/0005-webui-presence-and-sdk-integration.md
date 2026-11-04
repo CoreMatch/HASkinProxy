@@ -58,6 +58,12 @@ page to the dashboard.
   (`sdk/` embedded, uploaded via `POST /services/sdk-packages`) and drops
   the runtime WEBUI/auth routes; HA-Contract's dev doc already describes
   that design. Until merged, `main` behavior is what operators get.
+  **Update 2026-11-05**: the mainline decision (entry
+  [0007](./0007-mainline-decision.md)) made `10426` the main branch and
+  retired `main` (archived as tag `archive/main-2026-11-04`). The
+  compile-time SDK design is now what operators get; the runtime WEBUI
+  behavior described in this entry (items 3-5, including the password-reset
+  helper flow) exists only in the archived `main` tree.
 
 ## Evidence
 

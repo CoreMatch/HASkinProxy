@@ -21,7 +21,7 @@
 
 ### 前置要求
 
-- [Go](https://golang.org/dl/) 1.20 或更高版本。
+- [Go](https://golang.org/dl/) 1.24 或更高版本。
 
 ### 安装与运行
 
@@ -47,19 +47,29 @@
 ```yaml
 server:
   listen_addr: ":2702"        # 代理服务监听端口
+  public_url: "http://localhost:2702" # 外部可达的基础 URL，作为 HRPAuth relay 的转发源
 upstream:
-  base_url: "http://localhost:2778" # Yggdrasil 服务地址 (例如 HRPAuth)
+  base_url: "http://localhost:2778" # HRPAuth 根地址；Yggdrasil 调用会自动发往 base_url + /yggdrasil-api
   timeout: 10                # 上游请求超时时间（秒）
+  client_id: ""              # client_credentials 授权使用的 OAuth2 client id
+  client_secret: ""          # client_credentials 授权使用的 OAuth2 client secret
 cache:
   profile_ttl: 3600          # 玩家信息缓存时长（秒）
   texture_ttl: 86400         # 材质数据缓存时长（秒）
   max_size_mb: 256           # 最大缓存占用空间 (MB)
+presence:
+  enabled: true              # 通过 POST /services/presence 向 HRPAuth 注册
+  name: "HASkinProxy"        # presence 注册表中的服务名
+  ttl_seconds: 0             # 自声明存活时长（秒）；<=0 表示永不过期
+sdk:
+  enabled: true              # 通过 POST /services/sdk-packages 上传内置 SDK 包到 HRPAuth
 ```
 
 ## API 接口
 
 - **GET `/{username}.json`**: 获取玩家的 CSL 信息（包含皮肤/披风哈希）。
 - **GET `/textures/{hash}`**: 获取原始材质图像数据。
+- **POST `/{username}/texture/delete`**: 旧版删除透传，请求体原样转发到上游（仅为兼容旧上游保留，见 HA-Contract `docs/dev/HASkinProxy/README.md`）。
 - **GET `/health`**: 基础健康检查接口。
 
 ## 核心流程

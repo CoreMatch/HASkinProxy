@@ -27,7 +27,7 @@ All interface documents and development specifications are unified in the root d
 
 ### Prerequisites
 
-- [Go](https://golang.org/dl/) 1.20 or higher.
+- [Go](https://golang.org/dl/) 1.24 or higher.
 
 ### Installation & Run
 
@@ -55,8 +55,10 @@ server:
   listen_addr: ":2702"        # Port for the proxy to listen on
   public_url: "http://localhost:2702" # Externally reachable base URL, relay source for HRPAuth
 upstream:
-  base_url: "http://localhost:2778" # Your Yggdrasil service URL (e.g., HRPAuth)
+  base_url: "http://localhost:2778" # HRPAuth root URL; Yggdrasil calls are sent to base_url + /yggdrasil-api automatically
   timeout: 10                # Upstream request timeout in seconds
+  client_id: ""              # OAuth2 client id for the client_credentials grant
+  client_secret: ""          # OAuth2 client secret for the client_credentials grant
 cache:
   profile_ttl: 3600          # Profile cache duration (seconds)
   texture_ttl: 86400         # Texture cache duration (seconds)
@@ -65,18 +67,20 @@ presence:
   enabled: true              # Register with HRPAuth via POST /services/presence
   name: "HASkinProxy"        # Service name in the presence registry
   ttl_seconds: 0             # Self-declared lifetime (seconds); <=0 means never expire
+sdk:
+  enabled: true              # Upload the embedded SDK package to HRPAuth via POST /services/sdk-packages
 ```
 
 ## API Endpoints
 
 - **GET `/{username}.json`**: Returns the player's CSL profile (skin/cape hashes).
 - **GET `/textures/{hash}`**: Returns the raw texture image data.
-- **GET `/customskinloader`**: CustomSkinLoader setup page (config generator + usage), embedded in the WEBUI Dashboard.
+- **POST `/{username}/texture/delete`**: Legacy delete passthrough, forwarded to the upstream unchanged (kept for legacy upstreams only; see HA-Contract `docs/dev/HASkinProxy/README.md`).
 - **GET `/health`**: Simple health check endpoint.
 
 ## WEBUI Integration
 
-On startup, the proxy performs the presence (bonjour) handshake with HRPAuth (`POST /services/presence`) and declares the `webui-dash` frontend area. It then registers a relay rule (`POST /services/relay`) so the CustomSkinLoader page is served through the main service origin. Requires `server.public_url` to be set to an address reachable by HRPAuth.
+On startup, the proxy performs the presence (bonjour) handshake with HRPAuth (`POST /services/presence`, declaring the `webui-dash` frontend area) and registers a relay rule (`POST /services/relay`) so the CSL API is served through the main service origin under the `/csl/` prefix. Requires `server.public_url` to be set to an address reachable by HRPAuth. The CustomSkinLoader setup page for the dashboard is shipped as a compile-time SDK package (the embedded `sdk/` tree), uploaded to HRPAuth via `POST /services/sdk-packages` and aggregated into the frontend build by the WEBUI SDK handler — no runtime page route is served for it.
 
 ## Architecture
 
