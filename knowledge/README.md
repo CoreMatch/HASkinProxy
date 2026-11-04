@@ -19,12 +19,25 @@ self-hosting and maintenance.
 
 ## Important baseline note
 
-Entries describe the default branch `main` (HEAD `b4a041ec` at writing
-time). Branch `origin/10426` (`a83de4d2`) contains already-pushed,
-unmerged changes (OAuth2 client-credentials auth, `/yggdrasil-api` path
-prefixing, compile-time SDK package, Docker build). Where relevant, entries
-call out the divergence. See entry
-[0004](./0004-upstream-drift-and-dead-calls.md).
+Entries were authored against branch `main` at `b4a041ec` and cite
+`file:line` evidence from that tree. Note the repository situation at
+writing time (2026-11-04):
+
+- The remote's default/HEAD branch is **`10426`** (`a83de4d2`), not
+  `main`. `main` (`b4a041ec`) is a strict ancestor of `10426`; the remote
+  `main` branch had been absent and was recreated when this knowledge base
+  was pushed.
+- Branch `10426` contains already-pushed, unmerged-into-main changes:
+  OAuth2 client-credentials auth, `/yggdrasil-api` path prefixing,
+  compile-time SDK package delivery, Docker build. Where relevant, entries
+  call out the divergence; see especially entry
+  [0004](./0004-upstream-drift-and-dead-calls.md).
+- When reading an entry on a `10426` checkout, re-check the cited lines:
+  `internal/hrpauth/client.go`, `internal/router/router.go` and `main.go`
+  differ between the two branches.
+
+Which branch is the long-term mainline (and whether entries should be
+re-baselined onto `10426`) is **pending author confirmation**.
 
 ## Rules
 
