@@ -51,20 +51,25 @@ Yggdrasil's signed-property model onto this flat shape.
 
 ## Evidence
 
-- Suffix gate and profile flow: `internal/handler/csl_handler.go:28-93`
-  (HEAD of `main`, `b4a041ec`).
-- CSL model struct: `internal/model/csl.go:4-10`.
-- Hash extraction from URL: `internal/handler/csl_handler.go:133-136`.
-- Texture forwarding + headers + `X-Cache`: `internal/handler/csl_handler.go:96-131`.
-- Cache keys/TTLs: `internal/handler/csl_handler.go:38,90,100,128`;
-  defaults `config/config.go:105-107`.
-- Upstream calls used: `internal/hrpauth/client.go:50-82`
-  (`POST /api/profiles/minecraft`), `:85-113`
+- Suffix gate and profile flow:
+  `internal/handler/csl_handler.go:L28-L93 @ b4a041ec` (commit `b4a041ec`,
+  then HEAD of `main`).
+- CSL model struct: `internal/model/csl.go::CSLProfile`.
+- Hash extraction from URL: `internal/handler/csl_handler.go::extractHash`.
+- Texture forwarding + headers + `X-Cache`: `internal/handler/csl_handler.go::GetTexture`.
+- Cache keys/TTLs: `internal/handler/csl_handler.go::GetProfile`
+  (`profile:` keys), `internal/handler/csl_handler.go::GetTexture`
+  (`tex:` keys); defaults `config/config.go (field: profile_ttl)`,
+  `config/config.go (field: texture_ttl)`.
+- Upstream calls used: `internal/hrpauth/client.go:L50-L82 @ b4a041ec`
+  (`POST /api/profiles/minecraft`),
+  `internal/hrpauth/client.go:L85-L113 @ b4a041ec`
   (`GET /sessionserver/session/minecraft/profile/{uuid}`).
 - CSL relay dest `/csl` registration (so clients can use the main service
-  origin): `main.go:110-121`; introduced by commit
+  origin): `main.go::announcePresence`; introduced by commit
   `1755ae81c39a9c151dc53c770dc2beea72f887cf` ("feat(csl): add csl api relay
   and update webui config", 2026-09-01).
 - External protocol reference: repo HA-Contract (@ `21c7147d`),
-  `docs/references/CustomSkinAPI.md` and
-  `docs/dev/HASkinProxy/README.md` (Architecture Flow section).
+  `/home/lnb/Desktop/HA/HA-Contract/docs/references/CustomSkinAPI.md` and
+  `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HASkinProxy/README.md`
+  (Architecture Flow section).
