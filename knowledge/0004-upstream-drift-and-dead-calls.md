@@ -90,6 +90,13 @@ Recorded drift items, each verified:
   writing time; HA-Contract's dev doc already describes that newer design.
   Merging it is the intended path; until then this entry is the operator
   reference.
+  **Update 2026-11-05**: the mainline decision (entry
+  [0007](./0007-mainline-decision.md)) made `10426` the main branch;
+  `main` was retired and archived as tag `archive/main-2026-11-04`. The
+  fixes described above are now what operators get from the mainline, and
+  the "pushed but not merged" state no longer exists. Item 3 is moot on
+  `10426`: the setup-page auth flow that performed the email check was
+  removed entirely (compile-time SDK package, commit `6830c9c`).
 - The delete passthrough should be treated as compatibility-only for
   legacy upstreams (per HA-Contract); do not build user-facing flows on it.
 

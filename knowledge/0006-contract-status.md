@@ -36,6 +36,14 @@ HA-Contract keeps per-service OpenAPI files under `docs/api/openapi/`
      delete target) while `main` still implements the older mechanism —
      resolving that is the merge of `10426`, not a knowledge-base edit.
 
+**Update 2026-11-05**: the mainline decision (entry
+[0007](./0007-mainline-decision.md)) made `10426` the main branch; `main`
+was retired and archived as tag `archive/main-2026-11-04`. The dev doc and
+the mainline code now describe the same design, and this repository's
+README was synced to it (the stale `GET /customskinloader` runtime-route
+claim was removed; the setup page is delivered as a compile-time SDK
+package).
+
 ## Consequences
 
 - Drift findings about dead calls belong in
