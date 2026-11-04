@@ -46,17 +46,20 @@ next to the executable on first run (same convention as WinnerProxy).
   semantics) belongs to HASkinLib; anything about *Yggdrasil protocol*
   belongs to HRPAuth-Yggdrasil-API. This service only re-shapes and caches.
 - The external endpoint table is documented in HA-Contract
-  (`docs/dev/HASkinProxy/README.md`); this entry records internal scope.
+  (`/home/lnb/Desktop/HA/HA-Contract/docs/dev/HASkinProxy/README.md`);
+  this entry records internal scope.
 
 ## Evidence
 
-- Route registration: `internal/router/router.go:15-41` (HEAD of `main`,
-  `b4a041ec`).
-- Stateless design / freecache: `internal/cache/cache.go:14-22`;
-  README claim "High Performance Caching ... freecache": `README.md:22`.
-- Config auto-generation next to executable: `main.go:19-28,57-63`.
-- Default listen `:2702`: `config/config.go:99`.
+- Route registration: `internal/router/router.go:L15-L41 @ b4a041ec`
+  (commit `b4a041ec`, then HEAD of `main`).
+- Stateless design / freecache: `internal/cache/cache.go::NewCache`;
+  README claim "High Performance Caching ... freecache": `README.md:L22`.
+- Config auto-generation next to executable: `main.go::configPath`
+  (path next to the executable), `config/config.go::LoadConfig`
+  (generates a default file when missing).
+- Default listen `:2702`: `config/config.go (field: listen_addr)`.
 - Initial implementation commit: `8cc1cbb572294ad91719253fec74586f4a8c10b6`
   ("feat: implement HASkinProxy for Custom Skin API", 2026-08-14).
-- Positioning statement: `README.md:3` ("converts Yggdrasil API logic into
+- Positioning statement: `README.md:L3` ("converts Yggdrasil API logic into
   the CustomSkinLoader (CSL) compatible protocol format").
