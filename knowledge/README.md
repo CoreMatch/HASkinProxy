@@ -34,12 +34,13 @@ Baseline facts for readers:
   re-check against the `10426` tree — these files differ between the two
   branches. Entry [0004](./0004-upstream-drift-and-dead-calls.md) records
   which drift items `10426` fixes.
-- Branch name note: `10426` is a historical name chosen when the branch
-  was created locally on 2026-10-04 (reflog: `branch: Created from
-  b19585c`). Its meaning is not recorded anywhere in the repositories
-  (possibly a ticket number — not verified) and is treated as
-  **unrecoverable**. The branch is **not renamed**, because renaming would
-  break existing clones and references.
+- Branch name note: the author confirmed on 2026-11-05 that `10426`
+  denotes the date **2026-10-04** (`10/4/26`) — it matches the reflog
+  branch-creation time 2026-10-04 14:31. The name is a date marker, not a
+  functional codename. The branch is **not renamed**: existing clones, the
+  remote default-branch setting, and deployment/CI expectations already
+  reference this name, and renaming would break them without functional
+  gain.
 - The retired `main`'s unique work (the CSL-setup-page password-reset
   helper flow, `4ae8a10` + `b4a041e`) is preserved at tag
   `archive/main-2026-11-04`; reviving it is pending author confirmation.
