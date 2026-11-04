@@ -77,7 +77,7 @@ page to the dashboard.
 - Setup page handler: `internal/handler/webui_handler.go:48-55` (API root
   derivation described at `:49-51`).
 - Auth helper routes: `internal/router/router.go:24-29`; handlers
-  `internal/handler/auth_handler.go:11-38`; service
+  `internal/handler/auth_handler.go:11-103`; service
   `internal/service/auth_service.go:24-135` (captcha `:32-43`, reset code
   `:45-130`).
 - SMTP / code TTL config: `config/config.go:38-49,112-116`.
