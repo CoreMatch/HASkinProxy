@@ -4,10 +4,6 @@
 
 Accepted
 
-## Date
-
-2026-11-04
-
 ## Context
 
 The HA stack splits the Yggdrasil surface into the HRPAuth-Yggdrasil-API
@@ -64,7 +60,7 @@ against the current upstream.
 - Upstream route reality (repo HRPAuth-Yggdrasil-API @ `124b2fa1`):
   [xref] `/home/lnb/Desktop/HA/HRPAuth-Yggdrasil-API/main.go:L192 @ 124b2fa1`
   registers `DELETE /texture/delete/:uuid/:type`; no
-  `POST /texture/delete` exists (verified by route listing, 2026-11-04).
+  `POST /texture/delete` exists (verified by route listing).
 - HA-Contract legacy-passthrough statement (repo HA-Contract
   @ `21c7147d`):
   [xref] `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HASkinProxy/README.md`,
@@ -83,7 +79,7 @@ against the current upstream.
 - HRPAuth root lacks Yggdrasil routes: HRPAuth `main.go` route listing —
   [xref] `/home/lnb/Desktop/HA/HRPAuth/main.go:L174 @ 8dd67593`
   (`api := r.Group("")`); no `sessionserver`,
-  `/api/profiles/minecraft`, or `/textures` routes (verified 2026-11-04).
+  `/api/profiles/minecraft`, or `/textures` routes.
 - Two bases: `internal/hrpauth/client.go::NewHAClient` (`YggdrasilBaseURL`
   = `BaseURL + "/yggdrasil-api"`), `internal/hrpauth/client.go::yggURL`;
   default base URL `config/config.go (field: base_url)`.

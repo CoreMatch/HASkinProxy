@@ -4,10 +4,6 @@
 
 Accepted
 
-## Date
-
-2026-11-04
-
 ## Context
 
 HASkinProxy and HASkinLib have easily confused names, and both deal with
@@ -51,7 +47,7 @@ HASkinProxy is downstream of it and unaware of it.
   `internal/hrpauth/client.go::FetchTexture`
   (`{upstream.base_url}/yggdrasil-api/textures/{hash}`).
 - No HASkinLib reference anywhere in this repo: search for `skinlib` in
-  `*.go` returns no call site (verified 2026-11-04).
+  `*.go` returns no call site.
 - No database dependency: `go.mod` has no SQL driver; only gin, yaml,
   freecache and oauth2 (plus testify for tests).
 - HASkinLib side of the story (repo HASkinLib @ `54eee2f1`):

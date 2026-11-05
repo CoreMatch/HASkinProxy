@@ -4,11 +4,6 @@
 
 Accepted
 
-## Date
-
-2026-09-01 (presence + relay, commit `cbcdecaf`; CSL relay in `1755ae81`;
-compile-time SDK package 2026-10-09 in `6830c9c`)
-
 ## Context
 
 The HRPAuth WEBUI dashboard aggregates microservice pages through a
@@ -61,10 +56,9 @@ page to the dashboard, delivered as a compile-time SDK package.
   `internal/hrpauth/client.go::DeleteSDKPackage`.
 - Presence/SDK config: `config/config.go::PresenceConfig`,
   `config/config.go::SDKConfig`, `config/config.go (field: public_url)`.
-- Commits: presence `cbcdecaf69c91ed227f17822278fdcd084bb2f57`
-  (2026-09-01), CSL relay
-  `1755ae81c39a9c151dc53c770dc2beea72f887cf` (2026-09-01), compile-time
-  SDK package `6830c9c41c20928f41631c6d6d78abac5cdb53d0` (2026-10-09).
+- Commits: presence `cbcdecaf69c91ed227f17822278fdcd084bb2f57`,
+  CSL relay `1755ae81c39a9c151dc53c770dc2beea72f887cf`, compile-time
+  SDK package `6830c9c41c20928f41631c6d6d78abac5cdb53d0`.
 - Contract-side description of the SDK mechanism: repo HA-Contract
   (@ `21c7147d`),
   `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HASkinProxy/README.md`

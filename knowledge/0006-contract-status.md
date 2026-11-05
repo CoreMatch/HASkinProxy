@@ -4,10 +4,6 @@
 
 Accepted
 
-## Date
-
-2026-11-04
-
 ## Context
 
 HA-Contract keeps per-service OpenAPI files under
@@ -18,7 +14,7 @@ HA-Contract keeps per-service OpenAPI files under
 
 ## Decision
 
-1. **Current state (verified 2026-11-04):** HASkinProxy's external surface
+1. **Current state:** HASkinProxy's external surface
    is documented in HA-Contract
    `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HASkinProxy/README.md`
    (architecture flow, endpoint table, legacy delete-passthrough note) plus
@@ -48,7 +44,7 @@ HA-Contract keeps per-service OpenAPI files under
 
 - OpenAPI directory contents (no haskinproxy file): repo HA-Contract
   (@ `21c7147d`), `/home/lnb/Desktop/HA/HA-Contract/docs/api/openapi/`
-  listing (verified 2026-11-04).
+  listing.
 - Dev doc as the external reference: repo HA-Contract,
   `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HASkinProxy/README.md`
   (endpoint table and passthrough note);

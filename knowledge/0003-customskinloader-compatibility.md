@@ -4,10 +4,6 @@
 
 Accepted
 
-## Date
-
-2026-08-14 (initial implementation, commit `8cc1cbb5`)
-
 ## Context
 
 CustomSkinLoader clients request `{username}.json` from each configured API
@@ -66,7 +62,7 @@ Yggdrasil's signed-property model onto this flat shape.
 - CSL relay dest `/csl` registration (so clients can use the main service
   origin): `main.go::announcePresence`; introduced by commit
   `1755ae81c39a9c151dc53c770dc2beea72f887cf` ("feat(csl): add csl api relay
-  and update webui config", 2026-09-01).
+  and update webui config").
 - External protocol reference: repo HA-Contract (@ `21c7147d`),
   `/home/lnb/Desktop/HA/HA-Contract/docs/references/CustomSkinAPI.md` and
   `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HASkinProxy/README.md`
