@@ -4,10 +4,6 @@
 
 Accepted
 
-## Date
-
-2026-08-14 (initial implementation, commit `8cc1cbb5`)
-
 ## Context
 
 Minecraft clients using the CustomSkinLoader (CSL) mod do not speak
@@ -56,6 +52,6 @@ next to the executable on first run (same convention as WinnerProxy).
   (generates a default file when missing).
 - Default listen `:2702`: `config/config.go (field: listen_addr)`.
 - Initial implementation commit: `8cc1cbb572294ad91719253fec74586f4a8c10b6`
-  ("feat: implement HASkinProxy for Custom Skin API", 2026-08-14).
+  ("feat: implement HASkinProxy for Custom Skin API").
 - Positioning statement: `README.md:L3` ("converts Yggdrasil API logic into
   the CustomSkinLoader (CSL) compatible protocol format").

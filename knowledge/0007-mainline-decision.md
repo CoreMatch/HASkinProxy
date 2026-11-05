@@ -5,10 +5,6 @@
 Accepted (author ruling 2026-11-04: "如果分叉之后 10426 明显维护更新，则
 直接将 10426 作为新的主分支，撤销 main；反之亦然。")
 
-## Date
-
-2026-11-04
-
 ## Context
 
 `main` and `10426` diverged from `b19585ca` (2026-10-04,
@@ -81,7 +77,7 @@ more actively maintained; `main` is not.
   confirmation** (note: the contract removed the runtime WEBUI surface that
   flow belonged to, so a revival needs design work, not just a
   cherry-pick).
-- The branch name `10426` was confirmed by the author on 2026-11-05: it
+- The branch name `10426` was confirmed by the author: it
   denotes the date **2026-10-04** (`10/4/26`), matching the reflog branch
   creation time 2026-10-04 14:31 — a date marker, not a functional
   codename. The branch is still **not renamed**: the name is already
