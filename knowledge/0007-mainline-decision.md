@@ -70,8 +70,7 @@ more actively maintained; `main` is not.
 
 ## Consequences
 
-- Remote default branch: `10426` (it already was; verified, no switch
-  needed).
+- Remote default branch: `10426`.
 - `main` is preserved at its tip by tag `archive/main-2026-11-04` and then
   deleted from the remote; local `main` and `refs/remotes/origin/main`
   removed. Reason for retirement: superseded by the clearly more active
@@ -91,18 +90,9 @@ more actively maintained; `main` is not.
   functional gain.
 - Single mainline from now on: knowledge-base entries and fixes land only
   on `10426`; the previous double-write practice is ended.
-- Earlier entries in this directory were authored against `main` @
-  `b4a041ec`; where they cite lines that differ on `10426`
-  (`internal/hrpauth/client.go`, `internal/router/router.go`, `main.go`),
-  re-check against the `10426` tree. Entry
-  [0004](./0004-upstream-drift-and-dead-calls.md) already documents which
-  drift items `10426` fixes.
 
 ## Evidence
 
-- Commands and outputs recorded above were produced on 2026-11-04 in
-  `/home/lnb/Desktop/HA/HASkinProxy` (clone of
-  `https://github.com/CoreMatch/HASkinProxy.git`).
 - Fork point: `git merge-base main 10426` →
   `b19585ca417ce2e482ebe6fc7cb291ea9ea035aa`.
 - Branch tips at decision time: `main` =

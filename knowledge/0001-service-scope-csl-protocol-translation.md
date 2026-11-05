@@ -27,12 +27,9 @@ listen `:2702`):
 - `GET /textures/{hash}` — fetch raw texture bytes from the upstream and
   forward them with content headers.
 - `POST /{username}/texture/delete` — legacy passthrough to an upstream
-  delete endpoint; see
-  [0004](./0004-upstream-drift-and-dead-calls.md) for its broken state.
+  delete endpoint; legacy-only against the current HA upstream, see
+  [0004](./0004-upstream-drift-and-dead-calls.md).
 - `GET /health` — liveness.
-- On `main` only (runtime WEBUI surface): `GET /sdk/haskinproxy.js`,
-  `GET /customskinloader`, and `/auth/*` helper endpoints for the setup
-  page; see [0005](./0005-webui-presence-and-sdk-integration.md).
 
 It keeps **no database**; the only state is an in-memory freecache
 (profiles and texture bytes, TTL-based). Configuration is auto-generated
@@ -51,8 +48,7 @@ next to the executable on first run (same convention as WinnerProxy).
 
 ## Evidence
 
-- Route registration: `internal/router/router.go:L15-L41 @ b4a041ec`
-  (commit `b4a041ec`, then HEAD of `main`).
+- Route registration: `internal/router/router.go::New`.
 - Stateless design / freecache: `internal/cache/cache.go::NewCache`;
   README claim "High Performance Caching ... freecache": `README.md:L22`.
 - Config auto-generation next to executable: `main.go::configPath`

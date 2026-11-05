@@ -22,7 +22,7 @@ The two services are disjoint in role and do not call each other:
 |---|---|---|
 | Role | Yggdrasil → CSL protocol translation for MC clients | Texture storage, gallery, upload/delete management for users |
 | State | In-memory freecache only | MySQL tables + on-disk texture/preview files |
-| Auth | None of its own for the CSL surface (passthrough); small email-code flow for the setup page on `main` | OAuth2 Bearer verified against HRPAuth |
+| Auth | None of its own for the CSL surface (passthrough) | OAuth2 Bearer verified against HRPAuth |
 | Upstream | Yggdrasil surface (via `upstream.base_url`) | HRPAuth core HTTP API |
 | Clients | Minecraft clients with CustomSkinLoader | Web frontends / users; other services pulling by hash |
 
@@ -48,13 +48,12 @@ HASkinProxy is downstream of it and unaware of it.
 ## Evidence
 
 - Texture fetch from Yggdrasil surface:
-  `internal/hrpauth/client.go:L172-L198 @ b4a041ec`
-  (`FetchTexture` → `{BaseURL}/textures/{hash}`), HEAD of `main`
-  `b4a041ec`.
+  `internal/hrpauth/client.go::FetchTexture`
+  (`{upstream.base_url}/yggdrasil-api/textures/{hash}`).
 - No HASkinLib reference anywhere in this repo: search for `skinlib` in
   `*.go` returns no call site (verified 2026-11-04).
 - No database dependency: `go.mod` has no SQL driver; only gin, yaml,
-  freecache (plus captcha/mail for the `main`-only auth helper).
+  freecache and oauth2 (plus testify for tests).
 - HASkinLib side of the story (repo HASkinLib @ `54eee2f1`):
   `knowledge/0005-division-of-labor-with-skinproxy-and-yggdrasil.md`.
 - Package layout convention ("mirroring ... WinnerProxy"):
