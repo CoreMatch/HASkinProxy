@@ -51,9 +51,7 @@ Yggdrasil's signed-property model onto this flat shape.
 
 ## Evidence
 
-- Suffix gate and profile flow:
-  `internal/handler/csl_handler.go:L28-L93 @ b4a041ec` (commit `b4a041ec`,
-  then HEAD of `main`).
+- Suffix gate and profile flow: `internal/handler/csl_handler.go::GetProfile`.
 - CSL model struct: `internal/model/csl.go::CSLProfile`.
 - Hash extraction from URL: `internal/handler/csl_handler.go::extractHash`.
 - Texture forwarding + headers + `X-Cache`: `internal/handler/csl_handler.go::GetTexture`.
@@ -61,9 +59,9 @@ Yggdrasil's signed-property model onto this flat shape.
   (`profile:` keys), `internal/handler/csl_handler.go::GetTexture`
   (`tex:` keys); defaults `config/config.go (field: profile_ttl)`,
   `config/config.go (field: texture_ttl)`.
-- Upstream calls used: `internal/hrpauth/client.go:L50-L82 @ b4a041ec`
+- Upstream calls used: `internal/hrpauth/client.go::GetUUIDByUsername`
   (`POST /api/profiles/minecraft`),
-  `internal/hrpauth/client.go:L85-L113 @ b4a041ec`
+  `internal/hrpauth/client.go::GetProfileByUUID`
   (`GET /sessionserver/session/minecraft/profile/{uuid}`).
 - CSL relay dest `/csl` registration (so clients can use the main service
   origin): `main.go::announcePresence`; introduced by commit
