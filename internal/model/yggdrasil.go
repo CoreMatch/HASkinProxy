@@ -24,12 +24,12 @@ type ProfileProperty struct {
 
 // TexturePropertyValue is the decoded JSON from ProfileProperty.Value
 type TexturePropertyValue struct {
-	Timestamp uint64 `json:"timestamp"`
-	ProfileID string `json:"profileId"`
+	Timestamp   uint64 `json:"timestamp"`
+	ProfileID   string `json:"profileId"`
 	ProfileName string `json:"profileName"`
-	Textures struct {
-		SKIN *TextureInfo `json:"SKIN,omitempty"`
-		CAPE *TextureInfo `json:"CAPE,omitempty"`
+	Textures    struct {
+		SKIN   *TextureInfo `json:"SKIN,omitempty"`
+		CAPE   *TextureInfo `json:"CAPE,omitempty"`
 		ELYTRA *TextureInfo `json:"ELYTRA,omitempty"`
 	} `json:"textures"`
 }
