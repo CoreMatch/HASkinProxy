@@ -16,7 +16,7 @@ HA-Contract keeps per-service OpenAPI files under
 
 1. **Current state:** HASkinProxy's external surface
    is documented in HA-Contract
-   `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HASkinProxy/README.md`
+   `/home/lnb/Desktop/HA/HASkinProxy/knowledge/0008-service-development-guide.md`
    (architecture flow, endpoint table, legacy delete-passthrough note) plus
    `/home/lnb/Desktop/HA/HA-Contract/docs/references/CustomSkinAPI.md`
    for the CSL wire format. There is no
@@ -46,7 +46,7 @@ HA-Contract keeps per-service OpenAPI files under
   (@ `21c7147d`), `/home/lnb/Desktop/HA/HA-Contract/docs/api/openapi/`
   listing.
 - Dev doc as the external reference: repo HA-Contract,
-  `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HASkinProxy/README.md`
+  `/home/lnb/Desktop/HA/HASkinProxy/knowledge/0008-service-development-guide.md`
   (endpoint table and passthrough note);
   this repo's README links to it at `README.md:L13-L15`.
 - README endpoint list: `README.md:L74-L79`.

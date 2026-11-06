@@ -63,7 +63,7 @@ against the current upstream.
   `POST /texture/delete` exists (verified by route listing).
 - HA-Contract legacy-passthrough statement (repo HA-Contract
   @ `21c7147d`):
-  [xref] `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HASkinProxy/README.md`,
+  `/home/lnb/Desktop/HA/HASkinProxy/knowledge/0008-service-development-guide.md`,
   section "Texture Management
   Passthrough (Legacy Compatibility)" — "Against the current HA upstream
   this path is not registered, so the forwarder receives a 404."

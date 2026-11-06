@@ -65,5 +65,5 @@ Yggdrasil's signed-property model onto this flat shape.
   and update webui config").
 - External protocol reference: repo HA-Contract (@ `21c7147d`),
   `/home/lnb/Desktop/HA/HA-Contract/docs/references/CustomSkinAPI.md` and
-  `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HASkinProxy/README.md`
+  `/home/lnb/Desktop/HA/HASkinProxy/knowledge/0008-service-development-guide.md`
   (Architecture Flow section).

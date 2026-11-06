@@ -39,7 +39,7 @@ next to the executable on first run (same convention as WinnerProxy).
   semantics) belongs to HASkinLib; anything about *Yggdrasil protocol*
   belongs to HRPAuth-Yggdrasil-API. This service only re-shapes and caches.
 - The external endpoint table is documented in HA-Contract
-  (`/home/lnb/Desktop/HA/HA-Contract/docs/dev/HASkinProxy/README.md`);
+  (`/home/lnb/Desktop/HA/HASkinProxy/knowledge/0008-service-development-guide.md`);
   this entry records internal scope.
 
 ## Evidence
