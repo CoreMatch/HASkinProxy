@@ -104,5 +104,5 @@ page to the dashboard, delivered as a compile-time SDK package.
   SDK package `6830c9c41c20928f41631c6d6d78abac5cdb53d0`.
 - Contract-side description of the SDK mechanism: repo HA-Contract
   (@ `21c7147d`),
-  `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HASkinProxy/README.md`
+  `/home/lnb/Desktop/HA/HASkinProxy/knowledge/0008-service-development-guide.md`
   ("shipped as a compile-time SDK package").

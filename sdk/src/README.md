@@ -1,7 +1,7 @@
 // HASkinProxy SDK 页面源码目录。
 //
 // 本目录是编译时 SDK 包（compile-time SDK aggregation）的源，遵守
-// HA-Contract/docs/dev/HRPAuth/sdk-package.md：
+// HRPAuth/knowledge/0012-sdk-package-contract.md（原 HA-Contract docs/dev/HRPAuth/sdk-package.md）：
 //   - manifest.json 声明前端集成面（路由 / 菜单 / Dashboard）；
 //   - src/ 下的 TSX 模块被 HA-WebUI-SDKHandler 注入到
 //     HRPAuth-Web/src/generated/services/haskinproxy/ 并编译进前端；
