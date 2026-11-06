@@ -1,8 +1,5 @@
 package model
 
-// ProfileRequest is used for POST /api/profiles/minecraft
-type ProfileRequest []string
-
 // ProfileResponse is the item in the response array of POST /api/profiles/minecraft
 type ProfileResponse struct {
 	ID   string `json:"id"`
