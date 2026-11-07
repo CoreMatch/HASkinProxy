@@ -1,0 +1,58 @@
+# HASkinProxy 部署声明（deploy-manifest v1）
+# schema 依据：HA-Services-Deployer internal/manifest/（SchemaVersion=1）
+manifest_version: 1
+kind: service
+project: haskinproxy
+display_name: HASkinProxy
+group: satellite
+# 未知：仓库无版本 tag（仅 archive tag），代码与配置均无服务版本字段。
+service_version: "unknown"
+
+facts:
+  ports:
+    # deploy/config/haskinproxy.yaml.tmpl: server.listen_addr ":2702"；
+    # compose 默认对外映射
+    - name: http
+      port: 2702
+      exposure: public
+  health:
+    # internal/router/router.go r.GET("/health")；compose healthcheck 同路径
+    http:
+      port_name: http
+      path: /health
+      expect_status: 200
+      timeout_seconds: 5
+      interval_seconds: 30
+      retries: 3
+  depends_on:
+    # upstream.base_url 指向 HRPAuth；启动期凭据自助换取（经 HRPAuth
+    # /oauth/register），compose depends_on hrpauth: service_healthy。
+    # 无数据库、无 redis（模板无对应段，缓存为内存缓存）。
+    - project: hrpauth
+      kind: required
+  migration:
+    # 无数据库；配置文件本身无版本字段（代码亦无 ConfigVersion 常量），
+    # 不存在迁移机制。
+    mode: none
+  data_dirs: []
+  config:
+    # main.go configFileName="config.yaml"。
+    # 模板版本未知：模板无 version 字段，代码无配置版本常量
+    # （PROD-FILEREFRESH-20261107 §3-4 亦记录 "hasp 无版本字段"）。
+    - path: config.yaml
+      template_version: "unknown"
+  static_assets: ""
+
+baremetal:
+  process:
+    manager: aapanel
+  install:
+    # PROD-FILEREFRESH-20261107 §1：二进制在位路径 /www/wwwroot/hasp/hasp
+    root: /www/wwwroot/hasp
+    binary_name: hasp
+  artifact:
+    source: local_path
+    local_path: /home/lnb/Desktop/HA/HASkinProxy/build/hasp
+
+container:
+  enabled: false
