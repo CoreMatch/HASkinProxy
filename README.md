@@ -71,6 +71,18 @@ sdk:
   enabled: true              # Upload the embedded SDK package to HRPAuth via POST /services/sdk-packages
 ```
 
+## Deployment facts
+
+Authoritative deployment facts live in [`deploy-manifest.yaml`](deploy-manifest.yaml)
+at the repo root (consumed by HA-Services-Deployer's orchestrator;
+`manager: aapanel` means the process is panel-managed and the orchestrator
+treats it as read-only):
+
+- Listens on `:2702` (public); health probe `GET /health`.
+- Depends on HRPAuth (upstream plus startup credential exchange); no database,
+  no Redis, no data directories (in-memory cache only).
+- Config file `config.yaml` — unversioned (no template version field).
+
 ## API Endpoints
 
 - **GET `/{username}.json`**: Returns the player's CSL profile (skin/cape hashes).
