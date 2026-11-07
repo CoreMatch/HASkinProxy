@@ -46,12 +46,12 @@ next to the executable on first run (same convention as WinnerProxy).
 
 - Route registration: `internal/router/router.go::New`.
 - Stateless design / freecache: `internal/cache/cache.go::NewCache`;
-  README claim "High Performance Caching ... freecache": `README.md:L22-L22 ~ - **High Performance Caching**: Uses `freecache``.
+  README claim "High Performance Caching ... freecache": `README.md:L22-L22 fp=5ce351f5 ~ - **High Performance Caching**: Uses `freecache``.
 - Config auto-generation next to executable: `main.go::configPath`
   (path next to the executable), `config/config.go::LoadConfig`
   (generates a default file when missing).
 - Default listen `:2702`: `config/config.go (field: listen_addr)`.
 - Initial implementation commit: `8cc1cbb572294ad91719253fec74586f4a8c10b6`
   ("feat: implement HASkinProxy for Custom Skin API").
-- Positioning statement: `README.md:L3-L3 ~ A lightweight proxy service that converts **Yggd` ("converts Yggdrasil API logic into
+- Positioning statement: `README.md:L3-L3 fp=7204b3d4 ~ A lightweight proxy service that converts **Yggd` ("converts Yggdrasil API logic into
   the CustomSkinLoader (CSL) compatible protocol format").

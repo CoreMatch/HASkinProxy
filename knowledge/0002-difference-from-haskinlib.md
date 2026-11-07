@@ -53,4 +53,4 @@ HASkinProxy is downstream of it and unaware of it.
 - HASkinLib side of the story (repo HASkinLib @ `54eee2f1`):
   `knowledge/0005-division-of-labor-with-skinproxy-and-yggdrasil.md`.
 - Package layout convention ("mirroring ... WinnerProxy"):
-  `internal/hrpauth/client.go:L1-L3 ~ Package hrpauth is the HRPAuth upstream client, `, `internal/router/router.go:L1-L2 ~ Package router wires the HTTP routes onto a gin `.
+  `internal/hrpauth/client.go:L1-L3 fp=6c124347 ~ Package hrpauth is the HRPAuth upstream client, `, `internal/router/router.go:L1-L2 fp=fe4aedf1 ~ Package router wires the HTTP routes onto a gin `.
