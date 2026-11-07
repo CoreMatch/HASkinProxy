@@ -24,6 +24,19 @@ facts:
       timeout_seconds: 5
       interval_seconds: 30
       retries: 3
+  smoke:
+    # 部署后冒烟：走 Yggdrasil 兼容的 CSL 路径（GET /:username）取一次
+    # profile。用一个必然不存在的用户名：代理真实触达上游并正确返回
+    # 404 "user not found"（internal/handler/csl_handler.go；错误文案来自
+    # internal/hrpauth/client.go "user not found"）。上游不可达时错误文案
+    # 不同，断言会如实失败——证明的是查询链路活着，不是进程活着。
+    - name: csl-profile-query-miss
+      method: GET
+      path: /ha_smoke_probe_zz9999
+      expect_status: 404
+      timeout_seconds: 10
+      assert:
+        contains: user not found
   depends_on:
     # upstream.base_url 指向 HRPAuth；启动期凭据自助换取（经 HRPAuth
     # /oauth/register），compose depends_on hrpauth: service_healthy。
