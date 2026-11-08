@@ -34,7 +34,7 @@ sections) is documented in the
 - **Caching**: freecache
 - **Compliance**:
   - Upstream: [Yggdrasil API](https://github.com/yushijinhun/authlib-injector/wiki/Yggdrasil-API-Reference)
-  - Downstream: [CustomSkinAPI](../../references/CustomSkinAPI.md)
+  - Downstream: [CustomSkinAPI](https://github.com/CoreMatch/HA-Contract/blob/main/docs/references/CustomSkinAPI.md)
 
 ## Endpoints
 
@@ -48,7 +48,7 @@ sections) is documented in the
 The CustomSkinLoader setup page is not served as a runtime route anymore: it
 is shipped as a compile-time SDK package (`sdk/` in this repo, embedded into
 the binary and uploaded to HRPAuth on startup, see
-[HRPAuth sdk-package.md](../HRPAuth/sdk-package.md)).
+[HRPAuth 0012-sdk-package-contract.md](https://github.com/CoreMatch/HRPAuth/blob/main/knowledge/0012-sdk-package-contract.md)).
 
 ### Texture Management Passthrough (Legacy Compatibility)
 
