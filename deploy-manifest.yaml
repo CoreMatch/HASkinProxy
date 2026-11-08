@@ -65,7 +65,7 @@ baremetal:
     binary_name: hasp
   artifact:
     source: local_path
-    local_path: /home/lnb/Desktop/HA/HASkinProxy/build/hasp
+    local_path: build/hasp
 
 container:
   enabled: false
