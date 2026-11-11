@@ -80,5 +80,5 @@ container:
   image:
     source: registry
     repo: limeight/ha-haskinproxy
-    tag: "5daa8c3"
+    tag: "47dca41"
     digest: "sha256:c086ffaf549c34482fa70a5b90067e39df0f92fd872610ffe60ae5419685a6b2"
