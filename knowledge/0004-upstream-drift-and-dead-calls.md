@@ -62,7 +62,7 @@ mapped onto the route the current upstream actually registers.
   via `legacyDeleteRequest`; only `profile_id` and `texture_type`
   address the upstream).
 - Upstream route reality (repo HRPAuth-Yggdrasil-API @ `124b2fa1`):
-  [xref] `/home/lnb/Desktop/HA/HRPAuth-Yggdrasil-API/main.go:L192 @ 124b2fa1`
+  [xref] `/home/lnb/Desktop/HA/hrpauth/HRPAuth-Yggdrasil-API/main.go:L192 @ 124b2fa1`
   registers `DELETE /texture/delete/:uuid/:type`; no
   `POST /texture/delete` exists (verified by route listing).
 - HA-Contract legacy-passthrough statement (repo HA-Contract
@@ -72,16 +72,16 @@ mapped onto the route the current upstream actually registers.
   and this repo's `knowledge/0008-service-development-guide.md`
   ("Texture Management Passthrough") documents the current behavior.
 - Relay prefix mechanics (repo HRPAuth @ `8dd67593`):
-  [xref] `/home/lnb/Desktop/HA/HRPAuth/controllers/relay_controller.go:L172-L199 @ 8dd67593`
+  [xref] `/home/lnb/Desktop/HA/hrpauth/HRPAuth/controllers/relay_controller.go:L172-L199 @ 8dd67593`
   (longest-prefix match),
-  [xref] `/home/lnb/Desktop/HA/HRPAuth/controllers/relay_controller.go:L283-L316 @ 8dd67593`
+  [xref] `/home/lnb/Desktop/HA/hrpauth/HRPAuth/controllers/relay_controller.go:L283-L316 @ 8dd67593`
   (forward with prefix stripped),
-  [xref] `/home/lnb/Desktop/HA/HRPAuth/controllers/relay_controller.go:L274-L277 @ 8dd67593`
+  [xref] `/home/lnb/Desktop/HA/hrpauth/HRPAuth/controllers/relay_controller.go:L274-L277 @ 8dd67593`
   (`/yggdrasil-api` allowed anonymously),
-  [xref] `/home/lnb/Desktop/HA/HRPAuth/controllers/relay_controller.go:L286-L289 @ 8dd67593`
+  [xref] `/home/lnb/Desktop/HA/hrpauth/HRPAuth/controllers/relay_controller.go:L286-L289 @ 8dd67593`
   (`/services/*` never relayed).
 - HRPAuth root lacks Yggdrasil routes: HRPAuth `main.go` route listing —
-  [xref] `/home/lnb/Desktop/HA/HRPAuth/main.go:L174 @ 8dd67593`
+  [xref] `/home/lnb/Desktop/HA/hrpauth/HRPAuth/main.go:L174 @ 8dd67593`
   (`api := r.Group("")`); no `sessionserver`,
   `/api/profiles/minecraft`, or `/textures` routes.
 - Two bases: `internal/hrpauth/client.go::NewHAClient` (`YggdrasilBaseURL`
