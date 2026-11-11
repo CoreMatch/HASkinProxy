@@ -65,7 +65,7 @@ HASkinProxy's external surface is covered there by
   `/home/lnb/Desktop/HA/HA-Contract/scripts/check-consumer-urls.sh`
   (upstream URLs).
 - Dev doc as the external reference: repo HA-Contract,
-  `/home/lnb/Desktop/HA/HASkinProxy/knowledge/0008-service-development-guide.md`
+  `/home/lnb/Desktop/HA/hrpauth/HASkinProxy/knowledge/0008-service-development-guide.md`
   (endpoint table and passthrough note);
   this repo's README links to it at `README.md:L13-L15 fp=d4ebdb5d ~ All interface documents and development specific`.
 - README endpoint list: `README.md:L74-L79 fp=d82f0064 ~ Deployment facts`.

@@ -101,5 +101,5 @@ more actively maintained; `main` is not.
 - Contract citations: repo HA-Contract (@ `21c7147d`),
   [xref] `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HRPAuth/microservices.md:L94 @ 21c7147d`,
   [xref] `/home/lnb/Desktop/HA/HA-Contract/docs/dev/HRPAuth/microservices.md:L154 @ 21c7147d`;
-  `/home/lnb/Desktop/HA/HASkinProxy/knowledge/0008-service-development-guide.md`
+  `/home/lnb/Desktop/HA/hrpauth/HASkinProxy/knowledge/0008-service-development-guide.md`
   (describes the `10426` design).
