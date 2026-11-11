@@ -9,14 +9,18 @@
       "title": "CustomSkinLoader"
     }
   ],
-  "menu": {
-    "label": "CustomSkinLoader",
-    "path": "/customskinloader"
-  },
-  "dashboard": {
-    "label": "CustomSkinLoader",
-    "path": "/customskinloader"
-  },
+  "menu": [
+    {
+      "label": "CustomSkinLoader",
+      "path": "/customskinloader"
+    }
+  ],
+  "dashboard": [
+    {
+      "label": "CustomSkinLoader",
+      "path": "/customskinloader"
+    }
+  ],
   "dependencies": {},
   "run_scripts": false
 }
