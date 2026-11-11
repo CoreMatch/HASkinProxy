@@ -74,10 +74,11 @@ container:
   enabled: false
   # 容器形态镜像：已真实发布（Docker Hub，build → push → 回拉 → 挂回
   # compose 平台冒烟全过，含 /:username.json 与 /textures/* 真实调用）。
-  # digest 为生效引用，tag 仅可读别名。
+  # 镜像为 linux/amd64 + linux/arm64 多架构 manifest list，digest 钉的是
+  # manifest list 摘要（非单平台子摘要），为生效引用，tag 仅可读别名。
   # 部署时 Deployer 按 digest 优先真实拉取本镜像（鉴权沿用宿主 docker 登录态；拉后摘要对照不符即响亮失败）。
   image:
     source: registry
     repo: limeight/ha-haskinproxy
-    tag: "040db0b"
-    digest: "sha256:ad46c891af9793ed2a21efc39e74a9dc5b60850c91111ef616bb856370692c92"
+    tag: "5daa8c3"
+    digest: "sha256:c086ffaf549c34482fa70a5b90067e39df0f92fd872610ffe60ae5419685a6b2"
