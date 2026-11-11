@@ -68,7 +68,7 @@ HASkinProxy's external surface is covered there by
   `/home/lnb/Desktop/HA/hrpauth/HASkinProxy/knowledge/0008-service-development-guide.md`
   (endpoint table and passthrough note);
   this repo's README links to it at `README.md:L13-L15 fp=d4ebdb5d ~ All interface documents and development specific`.
-- README endpoint list: `README.md:L74-L79 fp=d82f0064 ~ Deployment facts`.
+- README endpoint list: `README.md:L83-L88 fp=54b5ecf0 ~ Deployment facts`.
 - `docs/api/README.md` positioning ("OpenAPI is the source for paths and
   response structures"): repo HA-Contract,
   `/home/lnb/Desktop/HA/HA-Contract/docs/api/README.md`.
