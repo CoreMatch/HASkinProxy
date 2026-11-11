@@ -176,13 +176,15 @@ func DecodeTextures(property model.ProfileProperty) (*model.TexturePropertyValue
 func (c *HAClient) DeleteTexture(profileID, textureType, authHeader string) ([]byte, int, http.Header, error) {
 	// The {uuid}/{type} placeholders are substituted after yggURL so the
 	// parameterized path stays visible to the HA-Contract consumer URL
-	// check; both segments are path-escaped before substitution.
-	url := strings.NewReplacer(
+	// check; both segments are path-escaped before substitution. The
+	// local is named reqURL (not url) so it never shadows the net/url
+	// package inside its own initializer.
+	reqURL := strings.NewReplacer(
 		"{uuid}", url.PathEscape(profileID),
 		"{type}", url.PathEscape(textureType),
 	).Replace(c.yggURL("/texture/delete/{uuid}/{type}"))
-	log.Printf("upstream request: DELETE %s", url)
-	req, err := http.NewRequest(http.MethodDelete, url, nil)
+	log.Printf("upstream request: DELETE %s", reqURL)
+	req, err := http.NewRequest(http.MethodDelete, reqURL, nil)
 	if err != nil {
 		return nil, 0, nil, err
 	}
@@ -191,11 +193,11 @@ func (c *HAClient) DeleteTexture(profileID, textureType, authHeader string) ([]b
 	}
 	resp, err := c.do(req)
 	if err != nil {
-		log.Printf("upstream error: DELETE %s: %v", url, err)
+		log.Printf("upstream error: DELETE %s: %v", reqURL, err)
 		return nil, 0, nil, err
 	}
 	defer resp.Body.Close()
-	log.Printf("upstream response: DELETE %s -> %d", url, resp.StatusCode)
+	log.Printf("upstream response: DELETE %s -> %d", reqURL, resp.StatusCode)
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
