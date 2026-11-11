@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"haskinproxy/config"
 	"haskinproxy/internal/cache"
 	"haskinproxy/internal/hrpauth"
@@ -135,14 +136,26 @@ func extractHash(url string) string {
 	return parts[len(parts)-1]
 }
 
-// DeleteTexture handles POST /csl/:username/texture/delete. It forwards
-// the request body unchanged to the upstream POST /texture/delete,
-// along with the caller's Authorization header (HASkinProxy does not
-// authenticate deletions itself). The :username path segment is used
-// only to identify which local cache entries to evict on success.
+// legacyDeleteRequest models the legacy JSON body the delete
+// passthrough accepts. Only profile_id and texture_type are needed to
+// address the current upstream route (DELETE /texture/delete/{uuid}/{type});
+// the remaining legacy fields (remember_token, auth_type, uid, email)
+// are ignored — the upstream identifies the account through the caller's
+// Bearer token.
+type legacyDeleteRequest struct {
+	ProfileID   string `json:"profile_id"`
+	TextureType string `json:"texture_type"`
+}
+
+// DeleteTexture handles POST /csl/:username/texture/delete. It maps the
+// legacy JSON body (profile_id, texture_type) onto the upstream route
+// DELETE /texture/delete/{uuid}/{type} registered by
+// HRPAuth-Yggdrasil-API, forwarding the caller's Authorization header
+// (HASkinProxy does not authenticate deletions itself; the upstream
+// validates the Bearer token and profile ownership). The :username path
+// segment is used only to identify which local cache entries to evict
+// on success.
 //
-// Request body: whatever the upstream POST /texture/delete accepts
-// (remember_token, profile_id, texture_type, auth_type, uid, email).
 // Response body: the upstream response forwarded as-is, with the
 // upstream status code.
 func (h *CSLHandler) DeleteTexture(c *gin.Context) {
@@ -155,6 +168,16 @@ func (h *CSLHandler) DeleteTexture(c *gin.Context) {
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "cannot read body"})
+		return
+	}
+
+	var del legacyDeleteRequest
+	if err := json.Unmarshal(body, &del); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON body"})
+		return
+	}
+	if del.ProfileID == "" || del.TextureType == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "profile_id and texture_type are required"})
 		return
 	}
 
@@ -172,7 +195,7 @@ func (h *CSLHandler) DeleteTexture(c *gin.Context) {
 		}
 	}
 
-	respBody, status, _, err := h.HAClient.DeleteTexture(body, c.GetHeader("Authorization"))
+	respBody, status, _, err := h.HAClient.DeleteTexture(del.ProfileID, del.TextureType, c.GetHeader("Authorization"))
 	if err != nil {
 		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
 		return
