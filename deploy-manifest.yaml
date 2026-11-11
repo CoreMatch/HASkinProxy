@@ -32,7 +32,10 @@ facts:
     # 不同，断言会如实失败——证明的是查询链路活着，不是进程活着。
     - name: csl-profile-query-miss
       method: GET
-      path: /ha_smoke_probe_zz9999
+      # CSL 路由是 /{username}.json（internal/router/router.go、
+      # csl_handler.go GetProfile 对非 .json 后缀直接裸 404 空体）；
+      # 带后缀才会真实走上游查询并回 {"error":"user not found"}。
+      path: /ha_smoke_probe_zz9999.json
       expect_status: 404
       timeout_seconds: 10
       assert:
@@ -69,3 +72,12 @@ baremetal:
 
 container:
   enabled: false
+  # 容器形态镜像：已真实发布（Docker Hub，build → push → 回拉 → 挂回
+  # compose 平台冒烟全过，含 /:username.json 与 /textures/* 真实调用）。
+  # digest 为生效引用，tag 仅可读别名。
+  # 注：Deployer 运行时的 registry 鉴权拉取本阶段未实现，此段为部署声明。
+  image:
+    source: registry
+    repo: limeight/ha-haskinproxy
+    tag: "040db0b"
+    digest: "sha256:ad46c891af9793ed2a21efc39e74a9dc5b60850c91111ef616bb856370692c92"
