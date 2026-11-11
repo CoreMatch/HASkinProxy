@@ -52,21 +52,24 @@ the binary and uploaded to HRPAuth on startup, see
 
 ### Texture Management Passthrough (Legacy Compatibility)
 
-`POST /{username}/texture/delete` is a transparent forwarder to an upstream
-legacy business endpoint `POST /texture/delete`. The proxy itself does **not**
-authenticate requests; the `Authorization` header and the request body are
-forwarded verbatim. The upstream response (status code and JSON body) is
-returned to the client unchanged.
+`POST /{username}/texture/delete` forwards a texture deletion to the
+upstream `DELETE /texture/delete/{uuid}/{type}` route registered by
+`HRPAuth-Yggdrasil-API`. The proxy itself does **not** authenticate
+requests; the caller's `Authorization` header is forwarded verbatim and
+the upstream validates the Bearer token and profile ownership. The
+upstream response (status code and JSON body) is returned to the client
+unchanged.
 
-This passthrough is **not part of the current `HRPAuth-Yggdrasil-API` active
-contract**. The current Yggdrasil service exposes profile-state deletion as
-`DELETE /texture/delete/{uuid}/{type}`. Until HASkinProxy is migrated, this
-endpoint should be treated as compatibility-only for legacy upstreams.
+The legacy JSON body (`remember_token, profile_id, texture_type,
+auth_type, uid, email`) is parsed locally: only `profile_id` and
+`texture_type` address the upstream route, the remaining fields are
+ignored (the upstream identifies the account through the Bearer token).
+A body that is not valid JSON or lacks `profile_id`/`texture_type`
+answers `400` without contacting the upstream.
 
-The forwarded request targets `{upstream.base_url}/yggdrasil-api/texture/delete`
-(i.e. through the HRPAuth core `/yggdrasil-api` relay prefix). Against the
-current HA upstream this path is not registered, so the forwarder receives a
-404.
+The forwarded request targets
+`{upstream.base_url}/yggdrasil-api/texture/delete/{uuid}/{type}` (i.e.
+through the HRPAuth core `/yggdrasil-api` relay prefix).
 
 `:username` is used only to evict local cache entries on success:
 

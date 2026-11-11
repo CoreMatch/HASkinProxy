@@ -10,27 +10,27 @@ The HA stack splits the Yggdrasil surface into the HRPAuth-Yggdrasil-API
 microservice, reachable through HRPAuth's relay under the `/yggdrasil-api`
 prefix (prefix stripped when forwarding), while the HRPAuth management
 endpoints live at the HRPAuth root. This entry records how the proxy is
-wired against both surfaces, and the one call that does not succeed
-against the current upstream.
+wired against both surfaces, and how the legacy delete passthrough is
+mapped onto the route the current upstream actually registers.
 
 ## Decision
 
-1. **The delete passthrough is legacy-only (404 against the current HA
-   upstream).** `POST /{username}/texture/delete` forwards the body and
-   the caller's `Authorization` header unchanged to
-   `POST {upstream.base_url}/yggdrasil-api/texture/delete`. The current
-   HRPAuth-Yggdrasil-API registers no such route; it exposes
-   `DELETE /texture/delete/{uuid}/{type}` instead, so the forwarded call
-   receives a 404. The handler documents the legacy body fields
-   (`remember_token, profile_id, texture_type, auth_type, uid, email`),
-   which match neither the current Yggdrasil-API nor the current HASkinLib
-   delete API (multipart `type`+`hash` with OAuth2 Bearer). HA-Contract
-   documents this endpoint as legacy-only and states it 404s against the
-   current upstream.
+1. **The delete passthrough maps the legacy body onto the current
+   upstream route.** `POST /{username}/texture/delete` parses the legacy
+   JSON body (`remember_token, profile_id, texture_type, auth_type, uid,
+   email`) and calls
+   `DELETE {upstream.base_url}/yggdrasil-api/texture/delete/{uuid}/{type}`
+   — the route HRPAuth-Yggdrasil-API actually registers — with
+   `profile_id` as `{uuid}` and `texture_type` as `{type}`. The remaining
+   legacy fields are ignored: the upstream identifies the account through
+   the caller's Bearer token (forwarded unchanged) and validates profile
+   ownership itself. The mapping exists because neither the legacy body
+   shape nor a `POST /texture/delete` route exists on the current
+   Yggdrasil-API (verified by route listing).
 2. **Two bases from one `base_url`.** All outbound URLs derive from
    `upstream.base_url`: the Yggdrasil calls (`/api/profiles/minecraft`,
    `/sessionserver/session/minecraft/profile/{uuid}`, `/textures/{hash}`,
-   `/texture/delete`) are built as `base_url + /yggdrasil-api + path` (the
+   `/texture/delete/{uuid}/{type}`) are built as `base_url + /yggdrasil-api + path` (the
    relay prefix), while the management calls (`/services/presence`,
    `/services/relay`, `/services/sdk-packages`, `/oauth/token`) are built
    against the HRPAuth root. The client therefore keeps `BaseURL` and
@@ -43,8 +43,10 @@ against the current upstream.
 
 ## Consequences
 
-- The delete passthrough is compatibility-only for legacy upstreams (per
-  HA-Contract); do not build user-facing flows on it.
+- The delete passthrough keeps the legacy CSL-facing request shape (a
+  POST with a JSON body) but reaches the current HA upstream; the
+  upstream authenticates the caller and checks profile ownership, so the
+  proxy stays out of authorization.
 - `upstream.base_url` must point at the HRPAuth root (the default
   `http://localhost:2778` does): the relay serves `/yggdrasil-api/*` and
   skips `/services/*`, while the root serves the management endpoints —
@@ -52,21 +54,23 @@ against the current upstream.
 
 ## Evidence
 
-- Delete passthrough target and verbatim forwarding:
-  `internal/hrpauth/client.go::DeleteTexture` (URL built from
-  `YggdrasilBaseURL`; body and `Authorization` header forwarded),
-  `internal/handler/csl_handler.go::DeleteTexture` (legacy body fields
-  documented in the handler comment).
+- Delete passthrough target and body mapping:
+  `internal/hrpauth/client.go::DeleteTexture` (DELETE against
+  `YggdrasilBaseURL` + `/texture/delete/{uuid}/{type}`, path segments
+  escaped; `Authorization` header forwarded),
+  `internal/handler/csl_handler.go::DeleteTexture` (legacy body parsed
+  via `legacyDeleteRequest`; only `profile_id` and `texture_type`
+  address the upstream).
 - Upstream route reality (repo HRPAuth-Yggdrasil-API @ `124b2fa1`):
   [xref] `/home/lnb/Desktop/HA/HRPAuth-Yggdrasil-API/main.go:L192 @ 124b2fa1`
   registers `DELETE /texture/delete/:uuid/:type`; no
   `POST /texture/delete` exists (verified by route listing).
 - HA-Contract legacy-passthrough statement (repo HA-Contract
-  @ `21c7147d`):
-  `/home/lnb/Desktop/HA/HASkinProxy/knowledge/0008-service-development-guide.md`,
-  section "Texture Management
-  Passthrough (Legacy Compatibility)" — "Against the current HA upstream
-  this path is not registered, so the forwarder receives a 404."
+  @ `21c7147d`): the contract's `haskinproxy-business.yaml` description
+  still records the legacy mismatch ("the forwarder receives a 404");
+  the proxy has since been migrated to the registered route (Decision 1),
+  and this repo's `knowledge/0008-service-development-guide.md`
+  ("Texture Management Passthrough") documents the current behavior.
 - Relay prefix mechanics (repo HRPAuth @ `8dd67593`):
   [xref] `/home/lnb/Desktop/HA/HRPAuth/controllers/relay_controller.go:L172-L199 @ 8dd67593`
   (longest-prefix match),

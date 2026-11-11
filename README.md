@@ -87,7 +87,7 @@ treats it as read-only):
 
 - **GET `/{username}.json`**: Returns the player's CSL profile (skin/cape hashes).
 - **GET `/textures/{hash}`**: Returns the raw texture image data.
-- **POST `/{username}/texture/delete`**: Legacy delete passthrough, forwarded to the upstream unchanged (kept for legacy upstreams only; see HA-Contract `docs/dev/HASkinProxy/README.md`).
+- **POST `/{username}/texture/delete`**: Legacy-shaped delete passthrough — parses the legacy JSON body (`profile_id`, `texture_type`) and forwards the caller's `Authorization` header to the upstream `DELETE /texture/delete/{uuid}/{type}` route (see HA-Contract `docs/dev/HASkinProxy/README.md`).
 - **GET `/health`**: Simple health check endpoint.
 
 ## WEBUI Integration
