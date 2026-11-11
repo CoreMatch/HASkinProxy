@@ -35,6 +35,23 @@ type Config struct {
 	} `yaml:"cache"`
 	Presence PresenceConfig `yaml:"presence"`
 	SDK      SDKConfig      `yaml:"sdk"`
+	SMTP     SMTPConfig     `yaml:"smtp"`
+	Auth     AuthConfig     `yaml:"auth"`
+}
+
+// SMTPConfig configures outbound mail used by the password-reset flow.
+type SMTPConfig struct {
+	Host      string `yaml:"host"`
+	Port      int    `yaml:"port"`
+	Username  string `yaml:"username"`
+	Password  string `yaml:"password"`
+	FromEmail string `yaml:"from_email"`
+	FromName  string `yaml:"from_name"`
+}
+
+// AuthConfig configures the password-reset auth flow.
+type AuthConfig struct {
+	CodeTTL int `yaml:"code_ttl"` // reset-code lifetime in seconds
 }
 
 // SDKConfig controls the compile-time SDK package upload. On startup the
@@ -112,5 +129,10 @@ func DefaultConfig() Config {
 	c.SDK = SDKConfig{
 		Enabled: true,
 	}
+	c.SMTP.Host = "smtp.example.com"
+	c.SMTP.Port = 587
+	c.SMTP.FromEmail = "noreply@example.com"
+	c.SMTP.FromName = "HASkinProxy"
+	c.Auth.CodeTTL = 600 // 10 minutes
 	return c
 }

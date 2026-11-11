@@ -11,6 +11,7 @@ import (
 	"haskinproxy/internal/handler"
 	"haskinproxy/internal/hrpauth"
 	"haskinproxy/internal/router"
+	"haskinproxy/internal/service"
 )
 
 const configFileName = "config.yaml"
@@ -38,6 +39,8 @@ func main() {
 	haClient := hrpauth.NewHAClient()
 	appCache := cache.NewCache()
 	cslHandler := handler.NewCSLHandler(haClient, appCache)
+	authService := service.NewAuthService(appCache, haClient)
+	authHandler := handler.NewAuthHandler(authService)
 
 	// 2.1 Presence handshake with HRPAuth (bonjour), non-blocking
 	if config.AppConfig.Presence.Enabled {
@@ -52,7 +55,7 @@ func main() {
 	}
 
 	// 3. Setup router
-	engine := router.New(cslHandler)
+	engine := router.New(cslHandler, authHandler)
 
 	// 4. Start server
 	addr := config.AppConfig.Server.ListenAddr
@@ -177,6 +180,8 @@ func announcePresence(cli *hrpauth.HAClient) {
 			// CSL API（Minecraft 客户端）：主服务 origin + /csl/ 前缀，relay 剥离
 			// 前缀后转发到本代理根路径（/:username、/textures/:hash）
 			{Dest: "/csl", Source: publicURL},
+			// Auth 接口（找回密码等）：主服务 origin + /auth -> 本代理 /auth
+			{Dest: "/auth", Source: publicURL + "/auth"},
 		}); err != nil {
 			log.Printf("WARN: relay rule registration with HRPAuth failed (proxy continues running): %v", err)
 			return

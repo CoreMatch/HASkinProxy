@@ -69,6 +69,15 @@ presence:
   ttl_seconds: 0             # Self-declared lifetime (seconds); <=0 means never expire
 sdk:
   enabled: true              # Upload the embedded SDK package to HRPAuth via POST /services/sdk-packages
+smtp:
+  host: "smtp.example.com"   # SMTP server for password-reset mail
+  port: 587
+  username: ""               # SMTP username (empty = no auth)
+  password: ""               # SMTP password
+  from_email: "noreply@example.com"
+  from_name: "HASkinProxy"
+auth:
+  code_ttl: 600              # Password-reset code lifetime (seconds)
 ```
 
 ## Deployment facts
@@ -88,6 +97,9 @@ treats it as read-only):
 - **GET `/{username}.json`**: Returns the player's CSL profile (skin/cape hashes).
 - **GET `/textures/{hash}`**: Returns the raw texture image data.
 - **POST `/{username}/texture/delete`**: Legacy-shaped delete passthrough — parses the legacy JSON body (`profile_id`, `texture_type`) and forwards the caller's `Authorization` header to the upstream `DELETE /texture/delete/{uuid}/{type}` route (see HA-Contract `docs/dev/HASkinProxy/README.md`).
+- **GET `/auth/captcha`**: Returns a graphic captcha for the password-reset flow.
+- **POST `/auth/send-reset-code`**: Verifies the captcha and emails a reset code if the address belongs to a registered user (always answers success to prevent enumeration).
+- **POST `/auth/verify-reset-code`**: Verifies a reset code.
 - **GET `/health`**: Simple health check endpoint.
 
 ## WEBUI Integration

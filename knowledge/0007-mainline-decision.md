@@ -70,13 +70,17 @@ more actively maintained; `main` is not.
 - `main` is preserved at its tip by tag `archive/main-2026-11-04` and then
   deleted from the remote; local `main` and `refs/remotes/origin/main`
   removed. Reason for retirement: superseded by the clearly more active
-  `10426`; its unique content (password-reset helper flow) was never
-  merged into the mainline.
-- `main`'s unique work is recoverable from the archive tag. Whether to
-  cherry-pick the password-reset flow into the mainline is **pending author
-  confirmation** (note: the contract removed the runtime WEBUI surface that
-  flow belonged to, so a revival needs design work, not just a
-  cherry-pick).
+  `10426`; its unique content (password-reset helper flow) was not merged at
+  retirement time (it was revived later, see the next bullet).
+- `main`'s unique work is recoverable from the archive tag. The
+  password-reset flow was revived into the mainline (author decision
+  2026-11-12): `4ae8a10` + `b4a041e` were ported (not cherry-picked) onto the
+  current architecture — `internal/service/auth_service.go`,
+  `internal/handler/auth_handler.go`, `/auth/*` routes, SMTP/auth config —
+  with the upstream user-existence check re-pointed from the removed
+  `GET /api/user?email=` to the core's `POST /internal/user-exists`. The
+  `/auth/*` surface is contracted in HA-Contract `haskinproxy-business.yaml`
+  1.1.0 (drift-gated).
 - The branch name `10426` was confirmed by the author: it
   denotes the date **2026-10-04** (`10/4/26`), matching the reflog branch
   creation time 2026-10-04 14:31 — a date marker, not a functional
