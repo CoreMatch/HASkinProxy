@@ -57,7 +57,7 @@ Qualitative signals:
   `10426` implements; HA-Contract's HASkinProxy dev doc describes the
   `10426` design.
 - Deployment capability: only `10426` has the Docker build consumed by
-  HA-Services-Deployer's compose setup.
+  HA-Cupbearer's compose setup.
 - No cherry-pick backfills in either direction (`git cherry main 10426`
   and the reverse show no equivalent commits among the substantive ones).
 
