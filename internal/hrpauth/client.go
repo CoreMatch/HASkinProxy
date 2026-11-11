@@ -15,6 +15,7 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -157,36 +158,44 @@ func DecodeTextures(property model.ProfileProperty) (*model.TexturePropertyValue
 	return &textures, nil
 }
 
-// DeleteTexture calls POST /texture/delete on the upstream. The body
-// and Authorization header are forwarded unchanged from the caller
-// (HASkinProxy itself does not authenticate the deletion). Returns the
-// raw response body, status code and upstream response headers.
+// DeleteTexture calls DELETE /texture/delete/{uuid}/{type} on the
+// upstream (the route HRPAuth-Yggdrasil-API actually registers). The
+// caller's Authorization header is forwarded unchanged (HASkinProxy
+// itself does not authenticate the deletion; the upstream validates the
+// Bearer token and profile ownership). The upstream route takes no
+// request body. Returns the raw response body, status code and upstream
+// response headers.
 //
 // The caller (handler) is expected to map client-side identifiers (e.g.
-// username) to upstream identifiers (profile_id) before invoking this
-// method, since the upstream body carries upstream-shaped fields.
+// username) to upstream identifiers (profile ID, texture type) before
+// invoking this method.
 //
 //	2xx          → body, status, header, nil
 //	other status → body, status, header, nil  (upstream decided the failure)
 //	network err  → nil, 0, nil, err
-func (c *HAClient) DeleteTexture(body []byte, authHeader string) ([]byte, int, http.Header, error) {
-	url := c.yggURL("/texture/delete")
-	log.Printf("upstream request: POST %s", url)
-	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
+func (c *HAClient) DeleteTexture(profileID, textureType, authHeader string) ([]byte, int, http.Header, error) {
+	// The {uuid}/{type} placeholders are substituted after yggURL so the
+	// parameterized path stays visible to the HA-Contract consumer URL
+	// check; both segments are path-escaped before substitution.
+	url := strings.NewReplacer(
+		"{uuid}", url.PathEscape(profileID),
+		"{type}", url.PathEscape(textureType),
+	).Replace(c.yggURL("/texture/delete/{uuid}/{type}"))
+	log.Printf("upstream request: DELETE %s", url)
+	req, err := http.NewRequest(http.MethodDelete, url, nil)
 	if err != nil {
 		return nil, 0, nil, err
 	}
-	req.Header.Set("Content-Type", "application/json")
 	if authHeader != "" {
 		req.Header.Set("Authorization", authHeader)
 	}
 	resp, err := c.do(req)
 	if err != nil {
-		log.Printf("upstream error: POST %s: %v", url, err)
+		log.Printf("upstream error: DELETE %s: %v", url, err)
 		return nil, 0, nil, err
 	}
 	defer resp.Body.Close()
-	log.Printf("upstream response: POST %s -> %d", url, resp.StatusCode)
+	log.Printf("upstream response: DELETE %s -> %d", url, resp.StatusCode)
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
