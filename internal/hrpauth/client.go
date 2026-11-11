@@ -234,6 +234,47 @@ func (c *HAClient) FetchTexture(hash string) ([]byte, http.Header, error) {
 	return data, resp.Header, nil
 }
 
+// CheckUserExistsByEmail calls POST /internal/user-exists on the upstream
+// (HRPAuth core) and reports whether a core user with the given email
+// exists. The call authenticates with the service token
+// (client_credentials). Used by the password-reset flow to gate outbound
+// mail on real accounts. Any non-2xx status or transport error is returned
+// as (false, err); callers treat that as "does not exist" so no mail is
+// sent while the upstream is uncertain.
+func (c *HAClient) CheckUserExistsByEmail(email string) (bool, error) {
+	reqURL := c.BaseURL + "/internal/user-exists"
+	log.Printf("upstream request: POST %s (email=%s)", reqURL, email)
+	body, _ := json.Marshal(map[string]string{"email": email})
+	req, err := http.NewRequest(http.MethodPost, reqURL, bytes.NewBuffer(body))
+	if err != nil {
+		return false, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.do(req)
+	if err != nil {
+		log.Printf("upstream error: POST %s: %v", reqURL, err)
+		return false, err
+	}
+	defer resp.Body.Close()
+	log.Printf("upstream response: POST %s -> %d", reqURL, resp.StatusCode)
+
+	if resp.StatusCode != http.StatusOK {
+		_, _ = io.Copy(io.Discard, resp.Body)
+		return false, fmt.Errorf("upstream returned status %d", resp.StatusCode)
+	}
+
+	var envelope struct {
+		Data struct {
+			Exists bool `json:"exists"`
+		} `json:"data"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&envelope); err != nil {
+		return false, err
+	}
+	return envelope.Data.Exists, nil
+}
+
 // PresenceScope is the scope declaration of a registered microservice.
 // A non-empty FrontendAreas makes the service visible to the frontends
 // whose areas overlap (see HA-Contract microservices.md).
