@@ -1,5 +1,5 @@
-// Package config loads HASkinProxy's runtime configuration from a YAML
-// file, mirroring the layout of WinnerProxy's top-level config package.
+// Package config loads Armorial Skin Proxy's runtime configuration from a YAML
+// file, mirroring the layout of Armorial Winner Proxy's top-level config package.
 package config
 
 import (
@@ -13,14 +13,14 @@ type Config struct {
 	Server struct {
 		ListenAddr string `yaml:"listen_addr"`
 		// PublicURL is the externally reachable base URL of this proxy
-		// (e.g. http://localhost:2702). It is announced to HRPAuth as the
+		// (e.g. http://localhost:2702). It is announced to Armorial as the
 		// relay source so the frontend can reach the CustomSkinLoader
 		// setup page through the main service origin.
 		PublicURL string `yaml:"public_url"`
 	} `yaml:"server"`
 	Upstream struct {
-		// BaseURL is the HRPAuth main service base URL. Yggdrasil API
-		// requests are routed through HA's /yggdrasil-api relay prefix.
+		// BaseURL is the Armorial main service base URL. Yggdrasil API
+		// requests are routed through Armorial's /yggdrasil-api relay prefix.
 		BaseURL string `yaml:"base_url"`
 		Timeout int    `yaml:"timeout"` // in seconds
 		// Client credentials are exchanged for an OAuth2 service token via
@@ -56,7 +56,7 @@ type AuthConfig struct {
 
 // SDKConfig controls the compile-time SDK package upload. On startup the
 // proxy packs the embedded sdk/ source tree (manifest.json + React page)
-// into a tar.gz archive and uploads it to HRPAuth (POST
+// into a tar.gz archive and uploads it to Armorial (POST
 // /services/sdk-packages); the WebUI SDK handler aggregates it into the
 // frontend build (see HA-Contract sdk-package.md). A failed upload is
 // logged but never blocks or stops the proxy.
@@ -66,14 +66,14 @@ type SDKConfig struct {
 }
 
 // PresenceConfig controls the microservice presence handshake with
-// HRPAuth (POST /services/presence, the "bonjour" handshake). It
-// registers HASkinProxy in HRPAuth's in-process presence registry so
+// Armorial (POST /services/presence, the "bonjour" handshake). It
+// registers Armorial Skin Proxy in Armorial's in-process presence registry so
 // the main service knows it is online. A failed handshake is logged but
 // never blocks or stops the proxy.
 type PresenceConfig struct {
 	// Enabled toggles the presence handshake. Default true.
 	Enabled bool `yaml:"enabled"`
-	// Name is the service name registered in HRPAuth. Default "HASkinProxy".
+	// Name is the stable service identifier registered in Armorial. Default "HASkinProxy".
 	Name string `yaml:"name"`
 	// TTLSeconds is the self-declared lifetime in seconds; <=0 (default)
 	// means the record never expires.
@@ -132,7 +132,7 @@ func DefaultConfig() Config {
 	c.SMTP.Host = "smtp.example.com"
 	c.SMTP.Port = 587
 	c.SMTP.FromEmail = "noreply@example.com"
-	c.SMTP.FromName = "HASkinProxy"
+	c.SMTP.FromName = "Armorial Skin Proxy"
 	c.Auth.CodeTTL = 600 // 10 minutes
 	return c
 }

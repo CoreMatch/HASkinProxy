@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-const rewriteFixture = `# HASkinProxy deployment config
+const rewriteFixture = `# Armorial Skin Proxy deployment config
 server:
     listen_addr: ":2702"
     public_url: http://localhost:2702
@@ -55,7 +55,7 @@ func TestRewriteClientCredentialsReplacesUpstreamPair(t *testing.T) {
 	if !strings.Contains(text, "client_id: HASkinProxy") || !strings.Contains(text, "client_secret: low-secret") {
 		t.Errorf("upstream section must carry the new pair, got:\n%s", text)
 	}
-	if !strings.Contains(text, "# HASkinProxy deployment config") {
+	if !strings.Contains(text, "# Armorial Skin Proxy deployment config") {
 		t.Error("comments must survive the rewrite")
 	}
 	if !strings.Contains(text, "base_url: http://hrpauth:2778") || !strings.Contains(text, "name: HASkinProxy") {

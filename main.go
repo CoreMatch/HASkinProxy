@@ -18,7 +18,7 @@ const configFileName = "config.yaml"
 
 func main() {
 	// 1. Load config (auto-generate if missing), located next to the
-	// executable (like WinnerProxy) so it works regardless of CWD.
+	// executable (like Armorial Winner Proxy) so it works regardless of CWD.
 	cfgPath, err := configPath()
 	if err != nil {
 		log.Fatalf("locate executable: %v", err)
@@ -28,7 +28,7 @@ func main() {
 	}
 
 	// 1.5 Startup credential resolution: when the configured upstream
-	// credentials are HRPAuth's built-in super client, they are exchanged
+	// credentials are Armorial's built-in super client, they are exchanged
 	// for this service's own low-privilege client via POST /oauth/register
 	// (RFC 7591 protected registration) and the super secret is discarded
 	// from memory. Must run before NewHAClient, which captures the
@@ -42,12 +42,12 @@ func main() {
 	authService := service.NewAuthService(appCache, haClient)
 	authHandler := handler.NewAuthHandler(authService)
 
-	// 2.1 Presence handshake with HRPAuth (bonjour), non-blocking
+	// 2.1 Presence handshake with Armorial (bonjour), non-blocking
 	if config.AppConfig.Presence.Enabled {
 		announcePresence(haClient)
 	}
 
-	// 2.2 Upload the compile-time SDK package to HRPAuth (if configured),
+	// 2.2 Upload the compile-time SDK package to Armorial (if configured),
 	// non-blocking. The WEBUI SDK handler aggregates it into the frontend
 	// build; see HA-Contract sdk-package.md.
 	if config.AppConfig.SDK.Enabled {
@@ -59,7 +59,7 @@ func main() {
 
 	// 4. Start server
 	addr := config.AppConfig.Server.ListenAddr
-	log.Printf("HASkinProxy starting on %s", addr)
+	log.Printf("Armorial Skin Proxy starting on %s", addr)
 	if err := engine.Run(addr); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
@@ -77,8 +77,8 @@ func configPath() (string, error) {
 }
 
 // resolveUpstreamCredentials implements the startup credential resolution
-// for the upstream (HRPAuth) client credentials: when they turn out to be
-// HRPAuth's built-in super client, they are exchanged for this service's
+// for the upstream (Armorial) client credentials: when they turn out to be
+// Armorial's built-in super client, they are exchanged for this service's
 // own low-privilege client via POST /oauth/register (RFC 7591 protected
 // registration) and the super secret is discarded from memory; credentials
 // that are already a per-service client are verified and reused unchanged
@@ -133,7 +133,7 @@ func resolveUpstreamCredentials(cfgPath string) {
 // (CONFIG_TEMPLATE/RENDERED_CONFIG) are only warned about; a failed
 // write-back is not fatal — the service keeps running with the in-memory
 // credentials and the next startup exchanges again (the secret is stable
-// server-side via HRPAuth get-or-create).
+// server-side via Armorial get-or-create).
 func applyResolvedCredentialsToConfigFile(cfgPath, superID, superSecret string, res *hrpauth.Resolution) {
 	if config.IsRenderedDeployment() {
 		log.Printf("WARN: config file is entrypoint-rendered (CONFIG_TEMPLATE/RENDERED_CONFIG); per-service credentials were NOT written back — set upstream.client_id/client_secret on the template/environment side instead; this deployment will exchange again on every start")
@@ -148,7 +148,7 @@ func applyResolvedCredentialsToConfigFile(cfgPath, superID, superSecret string, 
 }
 
 // announcePresence performs the presence (bonjour) handshake with
-// HRPAuth asynchronously. It registers HASkinProxy in HRPAuth's
+// Armorial asynchronously. It registers Armorial Skin Proxy in Armorial's
 // presence registry, declaring the WEBUI dashboard area it covers, then
 // registers the relay rule so the CSL API (/csl/...) is reachable
 // through the main service origin. The CustomSkinLoader frontend page is
@@ -168,7 +168,7 @@ func announcePresence(cli *hrpauth.HAClient) {
 			},
 		}
 		if err := cli.RegisterPresence(req); err != nil {
-			log.Printf("WARN: presence handshake with HRPAuth failed (proxy continues running): %v", err)
+			log.Printf("WARN: presence handshake with Armorial failed (proxy continues running): %v", err)
 			return
 		}
 		log.Printf("presence handshake ok: registered as %q", cfg.Name)
@@ -183,7 +183,7 @@ func announcePresence(cli *hrpauth.HAClient) {
 			// Auth 接口（找回密码等）：主服务 origin + /auth -> 本代理 /auth
 			{Dest: "/auth", Source: publicURL + "/auth"},
 		}); err != nil {
-			log.Printf("WARN: relay rule registration with HRPAuth failed (proxy continues running): %v", err)
+			log.Printf("WARN: relay rule registration with Armorial failed (proxy continues running): %v", err)
 			return
 		}
 		log.Printf("relay rules registered: /csl -> %s", publicURL)

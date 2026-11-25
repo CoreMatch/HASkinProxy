@@ -13,14 +13,14 @@ import {
 } from '@mui/material';
 
 /**
- * CustomSkinLoader 接入配置页（HASkinProxy SDK 路由模块）。
+ * CustomSkinLoader 接入配置页（Armorial Skin Proxy SDK 路由模块）。
  *
  * 功能与原 /customskinloader 静态页一致：生成 CustomSkinAPI
  * config.json 并复制 / 下载。CustomSkinAPI 根地址默认取
- * window.__BACKEND_URL__（HRPAuth 注入的主服务回源地址）+ /csl/
- * （HASkinProxy 的 relay dest），与 CSL 客户端的实际访问路径一致。
+ * window.__BACKEND_URL__（Armorial 注入的主服务回源地址）+ /csl/
+ * （Armorial Skin Proxy 的 relay dest），与 CSL 客户端的实际访问路径一致。
  *
- * 注意：本组件被 SDKHandler 编译进 HRPAuth-Web，只能使用 HRPAuth-Web
+ * 注意：本组件被 Armorial WebUI SDK Handler 编译进 HRPAuth-Web，只能使用 HRPAuth-Web
  * 已有的依赖（React 19 / MUI 7），且不得引用 window.location 以外的
  * 运行时环境（iframe 内嵌场景由外层 Dashboard 决定）。
  */
@@ -143,7 +143,7 @@ function buildConfig(root: string): string {
       enable: true,
       loadlist: [
         {
-          name: 'HASkinProxy',
+          name: 'Armorial Skin Proxy',
           type: 'CustomSkinAPI',
           root: normalized,
         },

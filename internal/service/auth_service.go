@@ -2,7 +2,7 @@
 // (auth) service was revived from the retired pre-10426 mainline
 // (archive/main-2026-11-04, commits 4ae8a10 + b4a041e) and adapted to the
 // current architecture: the upstream user-existence check now calls the
-// HRPAuth core's POST /internal/user-exists endpoint.
+// Armorial core's POST /internal/user-exists endpoint.
 package service
 
 import (

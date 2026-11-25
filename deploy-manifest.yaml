@@ -1,11 +1,11 @@
-# HASkinProxy 部署声明（deploy-manifest v1）
+# Armorial Skin Proxy 部署声明（deploy-manifest v1）
 # schema 依据：HA-Cupbearer internal/manifest/（SchemaVersion=1）
 manifest_version: 1
 kind: service
 project: haskinproxy
-display_name: HASkinProxy
+display_name: Armorial Skin Proxy
 group: satellite
-# HASkinProxy 1.3.0 统一生态版本。
+# Armorial Skin Proxy 1.3.0 统一生态版本。
 service_version: "1.3.0"
 
 facts:
@@ -41,7 +41,7 @@ facts:
       assert:
         contains: user not found
   depends_on:
-    # upstream.base_url 指向 HRPAuth；启动期凭据自助换取（经 HRPAuth
+    # upstream.base_url 指向 Armorial；启动期凭据自助换取（经 Armorial
     # /oauth/register），compose depends_on hrpauth: service_healthy。
     # 无数据库、无 redis（模板无对应段，缓存为内存缓存）。
     - project: hrpauth

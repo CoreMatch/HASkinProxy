@@ -15,7 +15,7 @@ import (
 )
 
 // sdkManifest mirrors the subset of the SDK package manifest schema
-// (HA-Contract sdk-package.md) HASkinProxy needs to drive the upload.
+// (HA-Contract sdk-package.md) Armorial Skin Proxy needs to drive the upload.
 type sdkManifest struct {
 	Name    string `json:"name"`
 	Version string `json:"version"`
@@ -36,7 +36,7 @@ func loadSDKManifest() (sdkManifest, error) {
 
 // buildSDKArchive packs the embedded sdk/ source tree into an in-memory
 // tar.gz archive with manifest.json at its root, matching the layout
-// validated by HRPAuth (see sdk-package.md).
+// validated by Armorial (see sdk-package.md).
 func buildSDKArchive() ([]byte, error) {
 	var buf bytes.Buffer
 	gz := gzip.NewWriter(&buf)
@@ -78,7 +78,7 @@ func buildSDKArchive() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// uploadSDKPackage uploads the compile-time SDK package to HRPAuth
+// uploadSDKPackage uploads the compile-time SDK package to Armorial
 // asynchronously (POST /services/sdk-packages, field "package"). If a
 // package with the same name already exists (409), the stale package is
 // deleted and the upload retried once, so every restart converges the
@@ -100,10 +100,10 @@ func uploadSDKPackage(cli *hrpauth.HAClient) {
 		filename := manifest.Name + "-sdk.tar.gz"
 		if err := cli.UploadSDKPackage(archive, filename); err != nil {
 			if !errors.Is(err, hrpauth.ErrSDKPackageConflict) {
-				log.Printf("WARN: sdk package upload to HRPAuth failed (proxy continues running): %v", err)
+				log.Printf("WARN: sdk package upload to Armorial failed (proxy continues running): %v", err)
 				return
 			}
-			log.Printf("sdk package %q already exists on HRPAuth, deleting and re-uploading", manifest.Name)
+			log.Printf("sdk package %q already exists on Armorial, deleting and re-uploading", manifest.Name)
 			if delErr := cli.DeleteSDKPackage(manifest.Name); delErr != nil {
 				log.Printf("WARN: delete stale sdk package failed (proxy continues running): %v", delErr)
 				return
@@ -113,6 +113,6 @@ func uploadSDKPackage(cli *hrpauth.HAClient) {
 				return
 			}
 		}
-		log.Printf("sdk package %q (v%s) uploaded to HRPAuth", manifest.Name, manifest.Version)
+		log.Printf("sdk package %q (v%s) uploaded to Armorial", manifest.Name, manifest.Version)
 	}()
 }
